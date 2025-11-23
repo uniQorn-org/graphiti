@@ -1,0 +1,440 @@
+parent_message_id,message_id,user_display,content,yyyymmdd,ts,thread_ts,reply_count,is_parent
+1759397403.927079,1759397403.927079,yudai tonoyama,We'll proceed with the calendar URL as is.,20251002,1759397403.927079,,0,True
+1759398497.794479,1759398497.794479,yhorita,Does graphrag refer to a specific library? Or is it a general concept?,20251002,1759398497.794479,,0,True
+1759399651.126629,1759399651.126629,Takuto Nariura,"It probably comes from MicroSoft's GraphRAG at first, but now it generally refers to all efforts to improve RAG accuracy with knowledge graphs.",20251002,1759399651.126629,,0,True
+c3a773a0-9a26-467c-be8c-5777ee585cd9,c3a773a0-9a26-467c-be8c-5777ee585cd9,Takuto Nariura,https://ghe.corp.yahoo.co.jp/ytonoyam/uniqorn/pull/38,20251002,1759399653.610699,,0,True
+957e574f-d16f-4117-90b2-10c8ce77bcf4,957e574f-d16f-4117-90b2-10c8ce77bcf4,Takuto Nariura,Are we using Microsoft's version?,20251002,1759399703.760339,1759399703.760339,2,True
+957e574f-d16f-4117-90b2-10c8ce77bcf4,487abec6-8e1c-4d61-b296-a234aa958c70,Takuto Nariura,I'm sorry! Thank you! :man-bowing:,20251002,1759399795.115869,1759399703.760339,0,False
+957e574f-d16f-4117-90b2-10c8ce77bcf4,3c88576f-51b6-49b2-abb0-be1de65ede1c,Takuto Nariura,We should hold this meeting on Zoom and check if the Webhook comes through.,20251002,1759400280.772379,1759399703.760339,0,False
+1759400384.452169,1759400384.452169,ykira,"I'm running late, sorry.",20251002,1759400384.452169,,0,True
+1759402486.753419,1759402486.753419,konagata,I need the database design.,20251002,1759402486.753419,,0,True
+1759407539.390099,1759407539.390099,Tatsuya Arisawa,Is it the JSON of the conversation data?,20251002,1759407539.390099,,0,True
+1759413415.935269,1759413415.935269,sawaki oku,"This time, I think it's a graph DB, so it might be a bit special. We're using the OSS graph DB ""Kuzu.""",20251002,1759413415.935269,,0,True
+1759413416.000419,1759413416.000419,shokichi takakura,~Distinguishing between GraphRAG and Graphiti~,20251002,1759413416.000419,,0,True
+1759413416.057009,1759413416.057009,Yusuke Sano,"*# Current Status*
+We were able to graph text using Graphiti.  
+*# Issues*
+I want to make it clear which nodes and edges to retrieve when responding to users.  
+*# Positive Points*
+If we can retrieve nodes and edges, users will be able to edit the graph.",20251002,1759413416.057009,,0,True
+1759413416.123089,1759413416.123089,Aoi Sato,We should hold this meeting on Zoom and check if the Webhook comes through.,20251002,1759413416.123089,,0,True
+1759413416.188379,1759413416.188379,issei matsumoto,"From next time, we'll hold the meeting on Zoom.",20251002,1759413416.188379,,0,True
+92b6ae18-fe59-41bf-a96a-88cce37221c4,92b6ae18-fe59-41bf-a96a-88cce37221c4,yudai tonoyama,Is my connection bad?,20251003,1759478134.574259,,0,True
+a1f8982b-2a47-45b8-a916-dbb094ec9733,a1f8982b-2a47-45b8-a916-dbb094ec9733,yudai tonoyama,It seems like they can't hear us.,20251003,1759478219.486939,1759478219.486939,2,True
+a1f8982b-2a47-45b8-a916-dbb094ec9733,64f3f81a-ced5-47b7-8731-f716701c9a32,yudai tonoyama,It seems like they can't hear my voice again...,20251003,1759508675.684019,1759478219.486939,0,False
+a1f8982b-2a47-45b8-a916-dbb094ec9733,fa24c73b-5b76-4ffe-97ab-58fb1f103a50,yudai tonoyama,I can hear @tonoyama.,20251003,1759508761.378729,1759478219.486939,0,False
+bd493083-bcb5-422d-ba38-0ee8f6ddf513,bd493083-bcb5-422d-ba38-0ee8f6ddf513,yudai tonoyama,@tonoyama's speaker seems to be malfunctioning.,20251004,1759510449.980619,,0,True
+68729c0a-c599-456b-b7ea-92ff59e85b92,68729c0a-c599-456b-b7ea-92ff59e85b92,yudai tonoyama,Was it the ear?,20251004,1759518322.641019,,0,True
+baa220a8-a4d2-4f81-954b-1a98e8a7d032,baa220a8-a4d2-4f81-954b-1a98e8a7d032,yudai tonoyama,Revolution of the Knowledge Graph,20251004,1759518470.703079,1759518470.703079,1,True
+f188628e-2ba9-474c-a9b6-7901d8345999,f188628e-2ba9-474c-a9b6-7901d8345999,yudai tonoyama,"Projects: @konagata management  
+Issues: @yudai tonoyama, @.Yusuke Sano management  
+That's the image, right?",20251004,1759587481.460809,1759518470.703079,0,True
+baa220a8-a4d2-4f81-954b-1a98e8a7d032,f188628e-2ba9-474c-a9b6-7901d8345999,yudai tonoyama,"For one person, 2-3 days would be about 5pt  
+8pt… something that one person can work hard on and finish in 1 week  
+5pt… something that one person can work hard on and finish in a few days  
+3pt… something that one person can work hard on and finish in 1 day  
+1pt... about 1 hour for one person",20251004,1759587481.460809,1759518470.703079,0,False
+f2b8aed5-8d55-4000-a40f-ac1ee13235b0,f2b8aed5-8d55-4000-a40f-ac1ee13235b0,yudai tonoyama,"How many hours can everyone contribute?  
+How many points can we consume?  
+This will allow us to predict the number of points we can consume in a week (there will be significant discrepancies in actual execution).",20251004,1759518537.638219,,0,True
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,467abc0b-f1af-4a51-a09b-b6ec26e25df6,yudai tonoyama,"@Yhorita What should I do? For now, I might want to get admin privileges if possible.",20251005,1759634534.960869,1759634534.960869,7,True
+45482aa6-f352-4d4e-966d-47066db75e0c,45482aa6-f352-4d4e-966d-47066db75e0c,yudai tonoyama,"Oh, didn't I give it to you? I'll hand it over when I get back. @Konagata If you can open the PC right away, it would be helpful if you could pass it on.",20251005,1759672070.691559,1759634534.960869,0,True
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,5306a02c-9891-4a62-9c0a-4c6ffb5403ce,yudai tonoyama,"@Yudai Tonoyama First, you need to open the email and activate the Zoom account; I can't transfer the privileges without that!!",20251005,1759671985.908929,1759634534.960869,0,False
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,45482aa6-f352-4d4e-966d-47066db75e0c,yudai tonoyama,"Just to let you know, I resent the email.",20251005,1759672070.691559,1759634534.960869,0,False
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,e6620434-bfa7-432e-8c54-3e19b98b2678,shokichi takakura,I'm going to take a bath.,20251005,1759721199.376379,1759634534.960869,0,False
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,ed5b2f3b-bfed-4ffb-8708-2f3af3aa9f80,yudai tonoyama,"Oh.. you’re right, it did come:pray: For now, I'm in the process of switching accounts.",20251005,1759721323.327679,1759634534.960869,0,False
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,af485b12-01bf-487f-9e43-70591bca2aa9,yudai tonoyama,Here you go! I transferred admin privileges.,20251005,1759766659.543969,1759634534.960869,0,False
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,e6a73b57-361b-4bb9-8e28-9217a23a34f6,yudai tonoyama,"Sorry, that helped a lot:pray:",20251005,1759769161.391439,1759634534.960869,0,False
+467abc0b-f1af-4a51-a09b-b6ec26e25df6,f98c757d-0308-4b2a-b616-a58d83f658ca,yhorita,!subteam^S09JN45NYKF,20251005,1759830629.189719,1759634534.960869,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,4b9361de-169c-40c5-baa8-1e755636485e,yudai tonoyama,Thread for tasks where I want to feed arbitrary Slack data.,20251005,1759634612.365889,1759634612.365889,9,True
+4b9361de-169c-40c5-baa8-1e755636485e,e302b269-b4e2-41e5-bd7c-58c07fc28e6e,konagata,"It seems like it might work with just yhorita and access_token, but it might just be that there's not much data to feed.",20251005,1759803029.347489,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,1501ee5b-153f-4ed5-aa2f-a3a9b0a9317c,yudai tonoyama,17-18 is :ok_hand:,20251005,1759803153.140899,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,50412849-9c4d-4ac6-a69d-ca0a499b5095,yudai tonoyama,It seems difficult for me and saoku.,20251005,1759803159.870819,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,7528fda4-a2c3-49d8-b589-be7256eb0de1,konagata,I am available from 17 to 18.,20251005,1759803230.957349,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,0600fb97-6db6-4111-b451-633964f21d6e,konagata,uniQorn-org,20251005,1759803261.411839,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,a3733c84-2f7b-46e8-9a9b-96f71b29a485,yudai tonoyama,Arisawa-san is also booked until 17:30.,20251005,1759803274.165309,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,3a02e5b1-8888-4f2e-b8ef-747ff0959371,yudai tonoyama,https://github.com/orgs/uniQorn-org,20251005,1759803639.319569,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,95253ab6-bd77-4d6e-ada2-8ea1189351fa,yudai tonoyama,"Understood. Then, let's have a meeting with @shokichi takakura san from 17 to 18. @Tatsuya Arisawa san can join whenever he is available. Is it okay if horita san and saoku san join from 18 to 19?",20251005,1759803644.184359,1759634612.365889,0,False
+4b9361de-169c-40c5-baa8-1e755636485e,3658738b-d23a-40e5-925d-f09b6d01212c,yudai tonoyama,"Hmm, if it's that bad, I might want to reschedule... Our policy is to have synchronous communication with meaningful content that everyone can participate in.",20251005,1759803655.721129,1759634612.365889,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,003d44b6-7ebf-40a7-bde2-c51fc32d61f3,yhorita,"I apologize for bringing up the rescheduling, but how about tomorrow for !subteam^S09JN45NYKF?",20251006,1759715467.499729,1759715467.499729,11,True
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,e0ce5168-b432-4170-93fc-2f29f26ea940,yhorita,Tomorrow works for me!,20251006,1759715512.421029,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,db63e8a5-8237-44e1-9105-1453ae701b70,sawaki oku,"Then, how about tomorrow from 18 to 19 :man-bowing: I sincerely apologize :man-bowing:",20251006,1759716296.749359,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,5da15f8b-38ea-417d-add2-52394ee9c4c0,yhorita,Understood for tomorrow :+1:,20251006,1759716434.475899,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,d5551c8b-3783-4b36-b70e-b48a6c2b8a5c,yhorita,There might be a theory that Slack data is just incredibly slow to consume.,20251006,1759716620.403209,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,7bc8b8a0-f57a-433c-b535-da1b0fb33c04,yudai tonoyama,I wonder why the timestamp error has stopped occurring.,20251006,1759716631.268589,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,cd203da0-bb99-4c3c-85a3-2249f2ffe4e7,yhorita,"So I have a connection with access_token, huh? lol",20251006,1759716673.713119,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,b355c868-baf0-4eb3-95ad-1d4f615dafb5,konagata,It might be just u and access_token that are making unicorn run.,20251006,1759716787.501179,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,1c002702-46df-480a-9610-0387edbd6ff3,yhorita,"Are we calling the OpenAI API's embedding with graphiti.add_episode()? Even if we parallelize it a bit, the time taken doesn't change...",20251006,1759802969.781649,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,bfcea6e7-ca48-469e-9105-4d700ca69655,Tatsuya Arisawa,"Hmm, maybe because the amount of data is small, we can't create a very meaningful graph.",20251006,1759802985.890269,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,68fb3d89-b72d-4347-9954-b11bc253b389,yhorita,"I created a webhook notification for when a Zoom meeting ends.
+https://github.com/uniQorn-org/zoom-webhook
+While it's possible to detect with a webhook on the free version of Zoom, it seems necessary to use the Pro version API to retrieve the transcription content...
+ーーー
+## Zoom Settings
+Create an app from the top right of https://marketplace.zoom.us by selecting Build App and then Webhook Only App.
+For the webhook endpoint, specify a URL generated by ngrok, like https://410674618b95.ngrok-free.app/zoom/webhook.",20251006,1759803015.667009,1759715467.499729,0,False
+003d44b6-7ebf-40a7-bde2-c51fc32d61f3,1dd924eb-ab9a-4fd1-b287-3bed07fd6595,shokichi takakura,"@yudai tonoyama
+I got a Pro account created, but if I create a meeting with that, can I connect it with the current features?
+I tried to create an app from the webhook only app, but I couldn't create it with my account, so I'd like to request a URL issuance. 🙇‍♂️",20251006,1759824479.556999,1759715467.499729,0,False
+6FEF8D70-A50C-4769-9F5B-8C1181794AB6,6FEF8D70-A50C-4769-9F5B-8C1181794AB6,yudai tonoyama,"Since I got promoted to admin, it seems possible.",20251006,1759748813.129789,1759748813.129789,4,True
+6FEF8D70-A50C-4769-9F5B-8C1181794AB6,a773cb5d-43bc-4d9a-bf91-14f41d1fc85b,yudai tonoyama,"~@yudai tonoyama~
+~Since the validation of the webhook URL didn't go well, could you set up a Zoom meeting with Tonoyama's account?~ 🙇‍♂️",20251006,1759761193.613149,1759748813.129789,0,False
+6FEF8D70-A50C-4769-9F5B-8C1181794AB6,756c473e-df9a-4ee4-b25b-e505d8244e7f,yudai tonoyama,@konagata How should we adjust the schedule for next week?,20251006,1759761327.747399,1759748813.129789,0,False
+6FEF8D70-A50C-4769-9F5B-8C1181794AB6,45ceb8c2-4f9f-491e-b79c-70b74e4f107a,yudai tonoyama,Next Tuesday 18:00-,20251006,1759761406.996449,1759748813.129789,0,False
+6FEF8D70-A50C-4769-9F5B-8C1181794AB6,71aa994f-e7a5-4043-a7ca-008752908393,yudai tonoyama,"The minutes for the AI huddle meeting are ready. You can edit, share, assign action items, or store them for later processing. :chipmunk:",20251006,1759769192.599709,1759748813.129789,0,False
+78fb0d0e-767a-4df4-ac79-3a61df14d8a8,78fb0d0e-767a-4df4-ac79-3a61df14d8a8,yudai tonoyama,"@username has turned on the AI huddle meeting minutes for this channel. This setting is managed in *""Channel Settings""*.",20251007,1759803762.761049,1759803762.761049,1,True
+78fb0d0e-767a-4df4-ac79-3a61df14d8a8,4cfd36a3-1ac1-49a1-b757-abf00a89a44f,yudai tonoyama,"Here are the GenSpark slides for Graphiti!
+https://www.genspark.ai/agents?id=6457e3af-1098-4a75-ac5d-acc00a60081a",20251007,1759804188.033069,1759803762.761049,0,False
+1759827548.963589,1759827548.963589,Slackbot,,20251007,1759827548.963589,1759827548.963589,22,True
+1759827548.963589,a3cb539e-6eb5-4ace-8178-3d45b9c499a5,yudai tonoyama,"Here is the OpenAI API key
+It cannot be used for purposes other than this project
+```sk-xxxxxxx```",20251007,1759827742.590919,1759827548.963589,0,False
+1759827548.963589,b5b9dd51-e1b0-4638-b05a-912c78835f67,yudai tonoyama,Deep Research on setting up the environment for Graphiti on Mac,20251007,1759827750.796349,1759827548.963589,0,False
+1759827548.963589,9c5c492c-3589-4191-8b2c-7060ad67dae8,yudai tonoyama,https://github.com/Tonoyama/uniqorn/issues,20251007,1759827992.040049,1759827548.963589,0,False
+1759827548.963589,ff2581c4-82c2-490b-9779-f3179f71b0b3,yhorita,"I pushed it directly, but I tried setting up the environment for Graphiti on Mac:tehepero:
+https://github.com/uniQorn-org/uniqorn/tree/main/graphiti-kuzu",20251007,1759828059.993789,1759827548.963589,0,False
+1759827548.963589,6fd9e246-34f1-424b-af1c-f09f495ce609,yudai tonoyama,"~I was able to input demo data (OpenAPI implementation in progress)~
+Correction: I was mistaken, so I am in the process of fixing it
+Gahhh! This is too much!",20251007,1759828063.368109,1759827548.963589,0,False
+1759827548.963589,14d74753-3da9-4df4-a6dd-9e5dff2e78f1,yhorita,"Everyone, let's check it out with the quick start
+https://github.com/uniQorn-org/uniqorn/tree/main/graphiti-kuzu
+It looks nice when the graphs are connected!",20251007,1759828064.441379,1759827548.963589,0,False
+1759827548.963589,8dd8bf02-c316-4478-b913-1f87686ba5c6,yhorita,But I've become the kind of person who can't develop without Cline...,20251007,1759828070.062859,1759827548.963589,0,False
+1759827548.963589,dd4c98ba-572c-4cf7-97a7-5e77a0aed076,yhorita,I'm using a company PC.,20251007,1759828076.120289,1759827548.963589,0,False
+1759827548.963589,708aedc8-6859-41c9-9d9f-ea40ce6afd5c,sawaki oku,;;,20251007,1759828079.905239,1759827548.963589,0,False
+1759827548.963589,2ec88424-9130-465d-946d-564921542c83,yhorita,"But I'm using the paid version of Claude personally, so my personal PC might be better for me. I can use Sonnet 4.5.",20251007,1759828288.661989,1759827548.963589,0,False
+1759827548.963589,fb0a26f0-1e7c-4d45-a5b4-5d7d09415b5a,konagata,contact@koukinagata.com,20251007,1759828461.420649,1759827548.963589,0,False
+1759827548.963589,250f1bcb-d86f-4a82-8d28-83b8611d0983,yhorita,"When I tried to run Graphiti, it said ```Incorrect API key provided```...",20251007,1759828722.320639,1759827548.963589,0,False
+1759827548.963589,7fe4da48-9197-4351-9ab5-1b920552e001,yhorita,https://github.com/getzep/graphiti,20251007,1759828831.439379,1759827548.963589,0,False
+1759827548.963589,b2fd661e-568f-42b5-b5ef-4b88864f5455,yudai tonoyama,https://app.getzep.com/playground,20251007,1759828923.101269,1759827548.963589,0,False
+1759827548.963589,c2d7e80a-b671-471a-b286-052d24956b19,yudai tonoyama,"Is this it?  
+https://uniqorntalk.slack.com/archives/C09JQQMUHCZ/p1759913136884109",20251007,1759829506.326719,1759827548.963589,0,False
+1759827548.963589,fece9da3-6254-43fd-a23e-a59698c4f949,yudai tonoyama,https://www.scrumpoker-online.org/en/room/81379082/scrum-poker,20251007,1759829711.044969,1759827548.963589,0,False
+1759827548.963589,1d216012-1ed4-4f72-b8e1-1753b9ead8cd,yudai tonoyama,This is it.,20251007,1759829829.410529,1759827548.963589,0,False
+1759827548.963589,0d4398a3-457f-48c8-867a-3fb35428b886,yhorita,ﾗﾝｸﾞｸﾞﾗﾌｸﾞﾗﾌﾗｸﾞ,20251007,1759830572.925639,1759827548.963589,0,False
+1759827548.963589,24021a7c-df30-47f4-abe8-b84dc8384eb9,yudai tonoyama,https://uniqorntalk.slack.com/archives/C09JQQMUHCZ/p1759671985908929?thread_ts=1759634534.960869&cid=C09JQQMUHCZ,20251007,1759830630.047539,1759827548.963589,0,False
+1759827548.963589,3ee492df-3110-4358-b025-77a6bceecbb3,yudai tonoyama,"With gpt-5, there are some third parties that get rejected with the project-specific sk-proj, and they say things like, ""Aren't you enclosing it in double quotes?""",20251007,1759832526.801269,1759827548.963589,0,False
+1759827548.963589,90dbb50d-c7af-4222-8a6c-1868f91e5895,yudai tonoyama,"It's from January, but  
+https://community.openai.com/t/project-api-keys-being-rejected/1088526/5",20251007,1759832544.342649,1759827548.963589,0,False
+1759827548.963589,1759832832.186609,Slackbot,"This is probably it... :bigkansya:  
+> Aren't you enclosing it in double quotes?",20251007,1759832832.186609,1759827548.963589,0,False
+1759827926.832749,1759827926.832749,yhorita,It worked. There are a lot of edges labeled `関連`.,20251007,1759827926.832749,,0,True
+47b6edd1-1ef5-4963-b852-1e0d1b013731,47b6edd1-1ef5-4963-b852-1e0d1b013731,yudai tonoyama,"Thank you!  
+Then, everyone, let's meet at 18:00 today at FIX! mm",20251007,1759845906.821689,,0,True
+d7c906c2-182d-43d8-9ac2-804a25df5bbc,d7c906c2-182d-43d8-9ac2-804a25df5bbc,yudai tonoyama,I might be a little late (please start without me),20251008,1759913136.884109,,0,True
+ed3a2497-d029-4ff2-a5bb-2710a4f4ab71,ed3a2497-d029-4ff2-a5bb-2710a4f4ab71,yudai tonoyama,"GraphRAG doesn't consider time, so unlike Confl, I feel like it's picking up even the content that has changed from what we discussed before.  
+It seems like we need to make it time aware...",20251008,1759915204.713459,,0,True
+6ffdc8af-cf38-42cd-b142-bb7a8dd7c11f,6ffdc8af-cf38-42cd-b142-bb7a8dd7c11f,yudai tonoyama,"T-GRAG: A Dynamic GraphRAG Framework for Resolving Temporal Conflicts and Redundancy in Knowledge Retrieval  
+I knew there was research like that.",20251008,1759918049.998899,,0,True
+7ff3316d-d261-4556-b169-b884301ff4c3,7ff3316d-d261-4556-b169-b884301ff4c3,yudai tonoyama,"This blog is easy to understand.  
+https://tech.layerx.co.jp/entry/tkg-agent",20251009,1759972016.476879,,0,True
+d39e704c-ad4c-4c38-a741-26c7fd7296fe,d39e704c-ad4c-4c38-a741-26c7fd7296fe,yudai tonoyama,It seems that Temporal Knowledge Graph is abbreviated as TKG. :fried_egg:,20251009,1760004237.141689,,0,True
+419bb977-d428-4589-9235-a3fa87ebafc5,419bb977-d428-4589-9235-a3fa87ebafc5,konagata,"This one seems the easiest to use.  
+I found something a bit crazy...  
+https://github.com/getzep/graphiti",20251009,1760004561.303549,,0,True
+208c849e-a5a9-47be-8b1d-00f6c944e1d0,208c849e-a5a9-47be-8b1d-00f6c944e1d0,konagata,"I found the strongest OSS called Graphiti, so I want to develop based on this.  
+https://zenn.dev/kun432/scraps/3decba41797bbe",20251009,1760004593.001209,,0,True
+e243b2b9-8b20-4773-9016-a268e9c65b75,e243b2b9-8b20-4773-9016-a268e9c65b75,konagata,"Graphiti seems like a version without this UI.  
+https://app.getzep.com/playground",20251009,1760004617.983759,,0,True
+231b575a-45e6-43d3-9594-01ff95cbcc1f,231b575a-45e6-43d3-9594-01ff95cbcc1f,yudai tonoyama,Oh. You might not be able to hear me.,20251010,1760096811.188309,,0,True
+c3c62cb4-5e3e-456c-bfcf-b9540af05770,c3c62cb4-5e3e-456c-bfcf-b9540af05770,shokichi takakura,The issue is blockchain.,20251011,1760147514.632329,,0,True
+d2828b97-d97c-4360-8958-5cb31291268b,d2828b97-d97c-4360-8958-5cb31291268b,shokichi takakura,"Finally, something that looks like it has come out...",20251011,1760155975.898029,1760155975.898029,7,True
+d2828b97-d97c-4360-8958-5cb31291268b,67d18472-ed3d-4806-a750-ae98bb65df95,konagata,"I submitted a PR. I fixed everything that had become `related`. I changed quite a bit, so please let me know if there are any issues @yudai tonoyama
+https://github.com/uniQorn-org/uniqorn/pull/16",20251011,1760159513.076509,1760155975.898029,0,False
+d2828b97-d97c-4360-8958-5cb31291268b,4a2a8d49-1309-4065-8a26-5855374f1797,konagata,"I submitted a PR. I fixed everything that had become `related`. I changed quite a bit, so please let me know if there are any issues @yudai tonoyama
+https://github.com/uniQorn-org/uniqorn/pull/16",20251011,1760159549.873889,1760155975.898029,0,False
+d2828b97-d97c-4360-8958-5cb31291268b,cb4c57f3-256e-4dd5-8ba2-bd93e5b1b49d,shokichi takakura,It moved nicely!,20251011,1760164714.917049,1760155975.898029,0,False
+d2828b97-d97c-4360-8958-5cb31291268b,d46f6e1e-beda-4adc-a9fe-d53418f032bc,shokichi takakura,"Here is the Slack token!
+https://devais.io/2025/04/10/vol24-_rag%E5%9E%8B%E7%A4%BE%E5%86%85%E3%83%81%E3%83[…]1%A7slack%E3%83%87%E3%83%BC%E3%82%BF%E5%8F%96%E5%BE%97_part2of7/",20251011,1760164902.638519,1760155975.898029,0,False
+d2828b97-d97c-4360-8958-5cb31291268b,efbacd36-93f4-428e-b512-1e561c150a70,yudai tonoyama,"Huh? I can't add the slack-read-app...
+I wonder why...?",20251011,1760198753.607309,1760155975.898029,0,False
+d2828b97-d97c-4360-8958-5cb31291268b,1ab72715-5266-455c-bb11-e3420159c753,yudai tonoyama,"Other members also have owner permissions, so theoretically it should be possible...",20251011,1760198798.383639,1760155975.898029,0,False
+27aa2d73-d491-491d-bb3f-f42cc3ba73fa,27aa2d73-d491-491d-bb3f-f42cc3ba73fa,shokichi takakura,"!subteam^S09JN45NYKF
+Regarding today's backend meeting, it seems difficult between 18-19, so can we do it a bit earlier?
+Also, ytonoyam is fine for tomorrow.",20251011,1760168378.852579,1760168378.852579,6,True
+27aa2d73-d491-491d-bb3f-f42cc3ba73fa,27db2267-34ad-4b09-b907-b258babe5d5f,konagata,Sounds interesting,20251011,1760168543.872269,1760168378.852579,0,False
+27aa2d73-d491-491d-bb3f-f42cc3ba73fa,cacc92c5-1ccf-49fe-873a-9de548a404df,shokichi takakura,"I'm half interested, but I'll take a look at the quick start",20251011,1760168599.411879,1760168378.852579,0,False
+27aa2d73-d491-491d-bb3f-f42cc3ba73fa,881ab375-a669-48f1-9d38-ac1a48b27717,shokichi takakura,"```{'error': {'message': 'Incorrect API key provided: ""sk-proj**********************************************************************************************************************************************************DgA"". You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}```",20251011,1760168637.328529,1760168378.852579,0,False
+27aa2d73-d491-491d-bb3f-f42cc3ba73fa,c0e791da-67ca-4950-9c52-e8414cc2af00,konagata,I'll also work on the task ticket a bit today,20251011,1760169132.133569,1760168378.852579,0,False
+27aa2d73-d491-491d-bb3f-f42cc3ba73fa,5ccfb41d-cc4f-43f2-a00e-156666e0f0cd,konagata,!subteam^S09JN45NYKF Let's definitely proceed from where we can:man-bowing::dogezasakuretu:,20251011,1760169211.316409,1760168378.852579,0,False
+27aa2d73-d491-491d-bb3f-f42cc3ba73fa,1221c231-8f6b-4834-a8d6-b132cc40d10f,shokichi takakura,I'll do my best during this 3-day weekend:muscle:,20251011,1760169760.473299,1760168378.852579,0,False
+74a5957b-d615-4c20-8b31-970b3e8d2ab7,74a5957b-d615-4c20-8b31-970b3e8d2ab7,shokichi takakura,Are you all doing development on your personal PCs?,20251011,1760171316.789089,1760171316.789089,5,True
+46d7a93b-db41-4308-8423-f17dcf2db84e,46d7a93b-db41-4308-8423-f17dcf2db84e,shokichi takakura,"You can't push to github.com when connected to VPN, right?",20251011,1760181025.692639,1760171316.789089,0,True
+74a5957b-d615-4c20-8b31-970b3e8d2ab7,46d7a93b-db41-4308-8423-f17dcf2db84e,shokichi takakura,Is there no particular disadvantage to doing it on a company PC otherwise?,20251011,1760181025.692639,1760171316.789089,0,False
+74a5957b-d615-4c20-8b31-970b3e8d2ab7,a8585e59-f456-464b-adac-82a76a096107,yudai tonoyama,"I see, I didn't know that",20251011,1760198816.468229,1760171316.789089,0,False
+74a5957b-d615-4c20-8b31-970b3e8d2ab7,655c0515-6b02-4610-acfe-604d456094d3,yudai tonoyama,I just simply don't want to use my personal account,20251011,1760198825.231909,1760171316.789089,0,False
+74a5957b-d615-4c20-8b31-970b3e8d2ab7,4f762521-4eb4-4d12-9aa4-e6ffee0ce9d6,yudai tonoyama,"An example of context related to the team generated by GraphRAG for issue creation.  
+Incorrect information can be edited like this.  
+When edited, the knowledge graph of GraphRAG will be updated, so it is expected that correct context information will be output in the future.",20251011,1760198880.513139,1760171316.789089,0,False
+74a5957b-d615-4c20-8b31-970b3e8d2ab7,3f0331f8-d6ba-4ca8-8fb9-1e170e6f7cad,shokichi takakura,【Good Idea:bulb:】It automatically suggests corrections for the context.,20251011,1760256522.601539,1760171316.789089,0,False
+ae21aaf5-38f7-48e8-8475-b9f2f3baa0b8,ae21aaf5-38f7-48e8-8475-b9f2f3baa0b8,shokichi takakura,【Good Idea:bulb:】It automatically suggests corrections for the context.,20251011,1760173187.139199,1760173187.139199,5,True
+ae21aaf5-38f7-48e8-8475-b9f2f3baa0b8,d508dc18-9f0d-4b66-a754-4baa3f775184,shokichi takakura,Here is a mock HTML to expand the image.,20251011,1760173274.745739,1760173187.139199,0,False
+ae21aaf5-38f7-48e8-8475-b9f2f3baa0b8,dc224efe-5738-4bdd-8609-02a2c95ea472,shokichi takakura,"【What I want to do】Create materials for GraphRAG, including deepening my understanding.  
+Currently, I need to investigate because I do not have a clear understanding of the details of creating the knowledge graph of GraphRAG.",20251011,1760173479.025659,1760173187.139199,0,False
+ae21aaf5-38f7-48e8-8475-b9f2f3baa0b8,7f81e1c7-df3a-4430-abbf-60c0fabc97d6,shokichi takakura,This might be a must-see for the backend team.,20251011,1760173511.272319,1760173187.139199,0,False
+ae21aaf5-38f7-48e8-8475-b9f2f3baa0b8,67fa19f8-d7d3-4251-923f-9b6862759fc0,shokichi takakura,"It turned out quite well when I generated it with GenSpark.  
+https://www.genspark.ai/agents?id=1365b124-ca03-4496-97a0-437fe2c46cc6",20251011,1760174076.254309,1760173187.139199,0,False
+ae21aaf5-38f7-48e8-8475-b9f2f3baa0b8,9bbf8107-d7bd-465d-8225-5a9d1a062934,shokichi takakura,This might be a must-see for the backend team.,20251011,1760256884.573499,1760173187.139199,0,False
+b8c51915-e74d-48d8-9c27-eea607108950,b8c51915-e74d-48d8-9c27-eea607108950,Takuto Nariura,↑This is really interesting.,20251013,1760325355.715469,1760325355.715469,6,True
+b8c51915-e74d-48d8-9c27-eea607108950,5a6bf56d-e85e-4903-90fc-45d5ab953e5c,konagata,This is nice.,20251013,1760327993.192419,1760325355.715469,0,False
+b8c51915-e74d-48d8-9c27-eea607108950,5cf797fe-6577-4a65-86be-5d1db29b8ee3,konagata,"Regarding the Slack data for feeding
+• Since we can't show internal data for the demo, we want to use our Unicorn workspace's Slack data -> Priority high
+• Until we can do the above, we will proceed with development using demo data for now
+• I want to say that we validated it with LY's data in presentations and materials, so I need to make this work with pat",20251013,1760328740.846779,1760325355.715469,0,False
+b8c51915-e74d-48d8-9c27-eea607108950,76af5244-6d81-4fda-b6f6-4d9d3fb1aa47,konagata,Version management is possible depending on which edge to look at,20251013,1760329106.736679,1760325355.715469,0,False
+b8c51915-e74d-48d8-9c27-eea607108950,9afdb31c-4f7c-48c2-8497-330a5a9a5f67,konagata,But I thought Kuzu might have version management or something similar by default,20251013,1760329140.689199,1760325355.715469,0,False
+b8c51915-e74d-48d8-9c27-eea607108950,9dde20ca-9adc-4c8e-9d89-98d813078db6,konagata,"If it's a DB, it should at least have version management functionality (not investigated)",20251013,1760329480.692669,1760325355.715469,0,False
+b8c51915-e74d-48d8-9c27-eea607108950,e0fb2e47-066f-4a64-bae4-c603e79642b4,Takuto Nariura,I was talking about something a step ahead,20251013,1760336022.282759,1760325355.715469,0,False
+cd76a5c7-2b4d-4ec0-9aa1-a5edc03c6b4b,cd76a5c7-2b4d-4ec0-9aa1-a5edc03c6b4b,konagata,"I have plans after this, so I will excuse myself a bit early mm
+
+If you could clarify N.A. and the date and time for the next meeting before we disperse, that would be great!",20251013,1760346338.139369,1760346338.139369,1,True
+cd76a5c7-2b4d-4ec0-9aa1-a5edc03c6b4b,8e3d2bba-bf5f-4ea1-acb1-c43419e5b890,sawaki oku,"First, aim to correct the context of the Graphiti at hand
+It would be strong to outline a roadmap that reflects the context correction in Cristal, but let's separate it from immediate development",20251013,1760521422.953919,1760346338.139369,0,False
+4508fc23-8e2b-4dd7-9085-5649c58abfb1,4508fc23-8e2b-4dd7-9085-5649c58abfb1,shokichi takakura,"!subteam^S09JRJEMSGJ
+It would be helpful if you could write the next actions we discussed earlier in the corresponding issue!
+If there is no corresponding issue, I will create a new one",20251013,1760359067.337109,1760359067.337109,2,True
+7284462e-adc8-4461-98e7-3c3b01b1206c,7284462e-adc8-4461-98e7-3c3b01b1206c,shokichi takakura,"!subteam^S09JN45NYKF !subteam^S09JKBHCETD
+I have invited you for next week on 10/22 (Wed) from 19:00 to 20:00",20251013,1760360378.262759,1760359067.337109,0,True
+4508fc23-8e2b-4dd7-9085-5649c58abfb1,7284462e-adc8-4461-98e7-3c3b01b1206c,shokichi takakura,"The minutes for the AI huddle meeting are ready. You can edit, share, assign action items, or store them for later processing. :chipmunk:",20251013,1760360378.262759,1760359067.337109,0,False
+4508fc23-8e2b-4dd7-9085-5649c58abfb1,935ffc1c-68bb-4ca7-b21b-d361a8c3ce41,yudai tonoyama,@yudai tonoyama has joined the channel,20251013,1760365295.308039,1760359067.337109,0,False
+e5196ed3-590d-43f8-ac1c-42a22b02b4d6,e5196ed3-590d-43f8-ac1c-42a22b02b4d6,yudai tonoyama,@yhorita has joined the channel,20251013,1760359987.042449,,0,True
+04c65e28-5e38-4071-9395-2560565e9ce5,04c65e28-5e38-4071-9395-2560565e9ce5,yudai tonoyama,@Takuto Nariura has joined the channel,20251013,1760360028.249609,1760360028.249609,2,True
+04c65e28-5e38-4071-9395-2560565e9ce5,5456213f-0ced-47cb-8b5c-049565437f02,yudai tonoyama,"↑ For now, I've created a topic that allows us to dynamically create workflows. I think it would be good to start by creating it as a single instance with adk.",20251013,1760360323.302939,1760360028.249609,0,False
+04c65e28-5e38-4071-9395-2560565e9ce5,43511743-c2c7-4908-903c-0a4212cd86a4,yudai tonoyama,"After dividing into TODOs, it feels like having the Agent write the instruct for each TODO and self-generate.
+
+If we expand this:
+• The data should include tools to enable API and web searches. I also want to combine GraphRAG.
+• The output format should be fixed with output_schema, and the type should be checked on the streaming side to determine the component.
+• At the point of the first TODO, we should search for existing Agent definitions and have the pre-existing Agents set up from the start - users can configure it themselves.
+I felt that starting from something like this would be good.",20251013,1760360346.645569,1760360028.249609,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,8f928590-9eb4-4fc4-9dd1-f55638e3642e,yudai tonoyama,"I will write the detailed implementation techniques in MyTips or something similar.
+(I'm being asked for departmental feedback on AI Agents.)",20251014,1760423052.129899,1760423052.129899,13,True
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,f0d811e2-d271-4cbb-9649-5558a650ccb5,shokichi takakura,@ykira has joined the channel,20251014,1760423105.357849,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,e37280e0-29dd-48c7-b3de-df1e403b5209,yhorita,@konagata has joined the channel,20251014,1760423128.926369,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,b96c47fc-f808-4462-8d44-1442f9a6749d,yudai tonoyama,@Tatsuya Arisawa has joined the channel,20251014,1760423140.410789,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,138329d3-65a0-4039-ab93-8b9dc521e7b2,yhorita,@sawaki oku has joined the channel,20251014,1760423171.593989,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,fe506c31-df6a-4b23-932b-b9fc0acd13f0,yudai tonoyama,@shokichi takakura joined the channel,20251014,1760423403.428289,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,f23d782c-ae92-47af-acda-4364ca5c50ee,yhorita,@Yusuke Sano joined the channel,20251014,1760423478.228749,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,5a026171-6255-4749-96a3-bad859d957d2,yudai tonoyama,@Aoi Sato joined the channel,20251014,1760423717.849799,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,84d4bed7-f272-4ef2-8456-bfbb8436fc31,sawaki oku,@issei matsumoto joined the channel,20251014,1760423934.421829,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,30f8af78-e165-41d6-a8fa-321c4fc4e906,shokichi takakura,:ok_hand:,20251014,1760424454.680649,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,0bd23a8c-31fe-48ef-90ab-06a5141174dc,Tatsuya Arisawa,:+1:,20251014,1760424521.441249,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,39a8940a-8755-4a9e-951e-a2790ce05cc8,yudai tonoyama,"【A little play with GraphRAG】
+GraphRAG seems to be structured in a way that allows for topic extraction during the entity generation process, so it looks like we can also generate structured text data for each topic. If we can output structured text data for each topic, humans can look at it and determine, ""this is correct"" or ""this is wrong,"" so I plan to try to create structured text data within the next day or two.",20251014,1760424525.918029,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,073f2357-3ad6-44f4-937c-9f78463d9fb3,konagata,"It's not necessary to do this for this month's demo creation, but since this kind of thing can be useful later on, please let me do it a little.",20251014,1760424646.853729,1760423052.129899,0,False
+8f928590-9eb4-4fc4-9dd1-f55638e3642e,6d964b45-7f53-4368-bdf0-cd0d7bc7f58d,yudai tonoyama,"```+------------------+        graphrag index        +---------------------------+
+|  Raw Data (Document Group) |  ------------------------->  |  GraphRAG Indexer         |
+|  PDFs, md, etc.  |                               |  (Extraction/Summarization/Community) |
++------------------+                               +------------+--------------+
+                                                             |
+                                                             |  Standard Output (Easy to Edit)
+                                                             v
+                                                 +-----------+-------------------------+
+                                                 |  Output Table/JSON                 |
+                                                 |  entities.parquet / relations...   |
+                                                 |  communities.parquet               |
+                                                 |  full_content_json/*.json          |
+                                                 +-----------+-------------------------+
+                                                             |
+                                           (Manual Correction: Name Normalization/False Detection Removal/Hierarchy)
+                                                             v
+                                           +-----------------+------------------+
+                                           | User Edited Structured Data         |
+                                           | topics_fixed.json / csv            |
+                                           +-----------------+------------------+
+                                                             |
+                             (Incremental Reflection: Import as a new period / use update_index_output)
+                                                             v
++------------------+       graphrag index (incremental)     +---------------------------+
+|  Existing Graph   | <------------------------------------- |  GraphRAG (Incremental Merge)       |
+|  (Previous Output Group)   |                                       +---------------------------+
++------------------+                                                      |
+                                                                          v
+                                                           +--------------+-------------+
+                                                           |  Search/Answer (local/global)  |
+                                                           +----------------------------+```",20251014,1760424719.155579,1760423052.129899,0,False
+1760518661.084259,1760518661.084259,Slackbot,,20251015,1760518661.084259,1760518661.084259,20,True
+68ce2444-99f9-41e8-80b9-0d380dd95b1b,68ce2444-99f9-41e8-80b9-0d380dd95b1b,konagata,"It seems like we can create a cycle like this:
+1. Show search results when the user needs it
+2. Correct if it's wrong
+3. Incrementally reflect the corrected structured data",20251015,1760520947.936639,1760518661.084259,0,True
+1760518661.084259,ff54e2e0-ccd0-41fd-91bf-f1200b6f9cb2,yhorita,"The backend tasks will be these 5!
+Let's do our best! 💪",20251015,1760519241.228199,1760518661.084259,0,False
+1760518661.084259,b646e44b-e366-46a6-a996-595ff49ac3f6,konagata,The image is that tasks are extracted from the meeting and issues are generated with GraphRAG's context completion.,20251015,1760519300.217059,1760518661.084259,0,False
+1760518661.084259,d109a382-99a1-46ad-8caa-45e66bf72c20,konagata,Is this data bad...?,20251015,1760519375.850959,1760518661.084259,0,False
+1760518661.084259,c06448c1-f50a-49d7-92ed-a392871d1828,yudai tonoyama,Is this data bad...?,20251015,1760519423.531059,1760518661.084259,0,False
+1760518661.084259,9a973220-33a5-494e-b2e1-50d73cbd1a14,yudai tonoyama,https://codezine.jp/article/detail/5130,20251015,1760519882.724699,1760518661.084259,0,False
+1760518661.084259,5b18aeac-bbc7-40fc-8ef7-40fb3b2141df,konagata,"Hmm, probably...",20251015,1760520171.124389,1760518661.084259,0,False
+1760518661.084259,b8e4ac17-7145-4c26-b401-b812c3bfa4f4,yudai tonoyama,It seems like the data is causing issues...,20251015,1760520241.411789,1760518661.084259,0,False
+1760518661.084259,68ce2444-99f9-41e8-80b9-0d380dd95b1b,konagata,It might be possible to retrieve this Slack data with the code in the `scrape-slack` directory...,20251015,1760520947.936639,1760518661.084259,0,False
+1760518661.084259,35b9fdb0-24b7-4715-b981-6dcf27f0d7ad,yudai tonoyama,It seems like everything is categorized as `related` in the visualization part from graphiti.,20251015,1760520984.099269,1760518661.084259,0,False
+1760518661.084259,5f8b14ad-4289-4ce4-8f79-db2852a84ee8,sawaki oku,Work thread (takakura),20251015,1760521126.973189,1760518661.084259,0,False
+1760518661.084259,7ece0125-ca7c-48b5-9ee1-5aea814ce004,konagata,https://uniqorntalk.slack.com/archives/C09JQQMUHCZ/p1760346338139369,20251015,1760521367.036859,1760518661.084259,0,False
+1760518661.084259,33066d42-7e26-4754-9bc3-b1dd121eff9e,konagata,"> :jigsaw: First premise: Graphiti's update philosophy
+> Graphiti has a principle of ""not overwriting knowledge.""
+> All information is *appended* as a ""new episode"" and
+> existing nodes and edges are simply *marked* as ""expired"" or ""conflicted.""
+> In other words:
+> :pencil2: Change = ""Add a new claim that negates a past claim, with time information and source.""",20251015,1760521474.963439,1760518661.084259,0,False
+1760518661.084259,41b6c478-afef-41d6-b624-779ef4883519,yudai tonoyama,"> Just before inserting a claim, Graphiti queries whether there exists a *valid (valid_to=null) relationship (Edge) with the same subject and predicate*.
+> ```
+> MATCH (s:Entity {uuid:$subject_id})-[r:$predicate]->(o)
+> WHERE r.valid_to IS NULL
+> RETURN r```
+> • If there are no existing edges and it's a new claim, it will be added as is.
+> • If there is an existing edge → proceed to *conflict resolution logic*.
+> 
+> :brain: ⑤ Conflict resolution policy
+> Graphiti has two types of internal policies for resolving conflicts:
+> Policy Processing Policy Example *invalidate (expiration mode)* sets the existing claim to `valid_to = now` and adds the new claim. The old knowledge remains as ""past fact."" Fact correction, value update, clear alternative (e.g., price change) *coexist (parallel retention mode)* retains the old claim and keeps the new claim as a separate version (confidence, provenance, time difference). Opinion conflict, uncertain information (e.g., two people gave different testimonies)",20251015,1760521935.310739,1760518661.084259,0,False
+1760518661.084259,a97ed65f-f001-4782-a5ad-9da3f9c16840,yudai tonoyama,It seems like it can be done with just the existing features of graphiti.,20251015,1760521964.136079,1760518661.084259,0,False
+1760518661.084259,3a2fc18f-0d16-48c6-951c-2c1f42094ba0,konagata,`Second Backend Meeting Schedule Adjustment`,20251015,1760522002.396969,1760518661.084259,0,False
+1760518661.084259,ecb3edc4-7f36-4062-b1a4-903f1062fd35,yhorita,@sawaki oku Is it correct to understand that being blocked until 18:00 on 10/7 means I'm essentially unavailable for the whole day...? Is there any miracle that makes it possible after 18:00...?,20251015,1760522172.329339,1760518661.084259,0,False
+1760518661.084259,b00a6ceb-867f-4687-a878-d9821a2bc32c,konagata,"I'm fine after 18:00! Tuesday is a planning day, so I have meetings all day :cry: But usually, they end early.",20251015,1760522242.379899,1760518661.084259,0,False
+1760518661.084259,d326ab26-cd56-4d28-8c18-b78802b88db8,konagata,"Wait, is this not a full-day schedule but all meetings…!? wow...",20251015,1760522783.135739,1760518661.084259,0,False
+1760518661.084259,9bf3f2a8-d219-4c3d-8146-741146db6544,konagata,"!subteam^S09JN45NYKF !subteam^S09JKBHCETD
+We are adjusting the schedule for the next Backend Meeting m
+
+I have tentatively reserved tomorrow, 10/7 from 18:00~! 
+Please let me know if anyone has a conflict!",20251015,1760522986.221109,1760518661.084259,0,False
+1760518661.084259,1760523194.757469,Slackbot,"In my previous team (ZCP), if it was Scrum, Tuesdays were all meetings and the day would be over...",20251015,1760523194.757469,1760518661.084259,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,yhorita,"I see, this is Scrum…",20251016,1760599468.763209,1760599468.763209,27,True
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,c502de82-a927-498e-ac7b-c70a26dc5b9c,issei matsumoto,"I have a meeting at 19:00, so I will leave right on time mm",20251016,1760603219.005909,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,af7b6948-9915-4997-b837-d004ce8635a6,yhorita,"@Tatsuya Arisawa
+Does this schedule look okay...? Sorry for the short notice m
+
+(I have confirmation from Takakura-sensei on the calendar, so I believe it's fine)",20251016,1760603617.768649,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,6b806b0d-3d34-4662-b6ba-0a007275a6c5,issei matsumoto,It's okay!,20251016,1760607957.309969,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,6f676bf0-5855-4539-a304-154e6f4004a6,yudai tonoyama,"1. Pattern 1: Allow modifications in a completely natural language dialogue format
+    ◦ Example: ""The version of hoge changed from v470 to v480""
+    ◦ Implementation: Add episode to graphiti
+2. Pattern 2: Directly edit words (entities) within the used context
+    ◦ Example: Change the version from v470 to v480 at https://uniqorntalk.slack.com/archives/C09JQQMUHCZ/p1759518470703079
+    ◦ Implementation: Directly manipulate the graphiti database",20251016,1760608149.457329,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,f015bcff-17df-4307-909f-1163d297438a,yudai tonoyama,Graphiti study time,20251016,1760608258.617369,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,7753b8c5-3386-4e27-afad-b3949f77d726,issei matsumoto,"@yudai tonoyama san, !subteam^S09JKBHCETD
+Regarding the decisions made in October (implementation of triggers after the MTG),
+is there already a confirmed story about wanting to implement this…?
+
+I have some time today and tomorrow, so I might be able to quickly check if we can implement and run it.",20251016,1760619517.055989,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,69a0f75d-ff9a-41e9-a50a-3171e5fbf746,yudai tonoyama,"@Takuto Nariura
+Here is the issue that tonoyama-san summarized regarding the implementation of triggers after the MTG:
+https://github.com/uniQorn-org/uniqorn/issues/2
+This is too large, so I have divided it into 5 items and assigned them to the backend members (2nd backend meeting):
+https://uniqorntalk.slack.com/archives/C09JR6JRS4R/p1759833533613889",20251016,1760625783.312289,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,9b207fd3-7513-4219-938c-dd32c1b87bfd,issei matsumoto,"Related threads
+• Normally, GraphRAG couldn't maintain a timeline, but using the library Graphiti seems to strengthen dynamic knowledge graph updates.
+https://uniqorntalk.slack.com/archives/C09JQQMUHCZ/p1759803762761049
+• The front end will hit Graphiti. Once the API I/F is determined, the range of actions will increase, so I want to prioritize this.
+https://uniqorntalk.slack.com/archives/C09HT2Y2YRL/p1759833875365549",20251016,1760662982.146479,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,0fe7efbe-9a01-449c-85e8-7ff2665a9921,konagata,"> A story about wanting to implement this
+In response to this question,
+• Summarize the MTG from the Webhook that triggers after the zoom MTG → extract next actions
+• Refer to a time-aware knowledge graph that retains Slack conversations as context
+• Automatically generate GitHub Issue proposals
+would this be correct? (I just rephrased the links above)",20251016,1761098339.342369,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,a5b2a738-2983-41c8-90b8-ebca48395ef9,yudai tonoyama,"@yudai tonoyama
+Is my understanding of the story correct?",20251016,1761110493.667779,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,261b1fe0-e656-466b-a1ab-c7c469c8067b,konagata,"I wasn't involved in the part where the output became a GitHub issue,
+but I understand it from an engineering perspective as something like ""creating what we will use.""
+
+*Zoom + Always On*
+→ This is something everyone is using + it's a point of interest for Mr. Son & the judges, so it's decided to include it,
+and if the output works well as an example of a GitHub issue, I want to expand this discussion to other business contents and job types.",20251016,1761272896.608029,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,b859faee-0b7f-45de-8bb0-99fc4503c9aa,yudai tonoyama,"After playing around with Graphiti a bit,
+I will proceed with the Always On prototype.",20251016,1761273143.725889,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,e7069f1a-a12c-4945-8d55-6f1aa4e35e5e,yudai tonoyama,"【Question】
+Unlike vector stores, the ability to update context with a knowledge graph is very strong, but I feel a sense of danger.
+Unlike GPTs and SeekAI where administrators input RAG knowledge, is it possible for a single user to update with false information?
+If the knowledge of experts in each domain can be returned and reach other users, it seems we could truly approach a digital twin.
+https://github.com/uniQorn-org/uniqorn/issues/4#issuecomment-3392736630",20251016,1761273214.653839,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,b53191e6-7311-46b9-8e8a-4514e37f12d2,yudai tonoyama,"That's right.  
+Currently, I've found that it works with the free version of the Zoom webhook, so it seems we need something that can send the transcription at the same time as the end of the paid version of Zoom.",20251016,1761273413.054449,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,66cc2598-a791-4a4f-abe4-ebc148b419f4,issei matsumoto,"@issei matsumoto @yudai tonoyama  
+I've created a new issue below!  
+https://github.com/uniQorn-org/zoom-webhook/issues/1  
+(I created it under zoom-webhook and it's already placed in the Org's Projects)  
+Is my understanding correct that we want to first create a Pro version app on Zoom that can receive the transcription, starting from the current script that only detects?
+
+If you have any questions, feel free to ask! :man-bowing:",20251016,1761274919.469329,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,cb3bd37f-e502-432e-82b3-58b43bac6cd3,yhorita,"> We want to first create a Pro version app on Zoom that can receive the transcription.  
+Yes! I have the same understanding!",20251016,1761295809.225039,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,d8c02a23-8eff-457c-a3d1-5f243f48c706,yudai tonoyama,"If we can send the transcription to LLM and GraphRAG, that would be quite significant.  
+That's why this issue is necessary.",20251016,1761296053.068709,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,c57d9745-c83e-418a-8ee6-6e0099228064,yudai tonoyama,"@issei matsumoto  
+Is it possible to address this issue?  
+https://github.com/uniQorn-org/zoom-webhook/issues/1",20251016,1761296162.269619,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,0f363cac-0add-4045-87f5-b3e4af16ac5a,yhorita,"If it's possible, I think it would be next week or later...",20251016,1761296250.929909,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,35BE0FDF-F4F6-4B69-8A3C-A1238F7834E9,yudai tonoyama,"Since it seems like front tasks might come up in next week's front meeting, if @tonoyama can make progress on this task over the weekend, that could be an option?  
+If @tonoyama is going to do it, it seems like it would start at the beginning of the week, so how about we continue and ask @issei to handle it all at once?",20251016,1761305708.943539,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,914B50F5-0C03-4A66-8F86-EDA72E0D1FC3,yhorita,"This week, I'm going to the Tech Book Fair starting tomorrow to sell books, so it's quite busy...",20251016,1761305761.522169,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,4e76d8bf-5fed-4e44-8761-2fa6f9d8ab2e,yhorita,"That said, if I have any free time, I plan to tackle it.",20251016,1761308115.090539,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,3c8f2e7b-af57-48e7-a5cd-7ac3a542d59a,yhorita,"Ah, that's right.  
+No, please don't push yourself at all.",20251016,1761308133.559079,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,bb943c2a-f2dc-4191-b118-d0c1877740b8,yhorita,"@issei matsumoto  
+Issei, you can handle backend too, right?  
+If it seems like the frontend won't be able to start moving yet, I thought it might be good to have you help with backend tasks. What do you think?  
+
+@yudai tonoyama @konagata @Yusuke Sano",20251016,1761308148.958529,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,E4E73C01-926E-464B-B128-E58C782D7DC8,yudai tonoyama,"@yhorita @yudai tonoyama @konagata  
+I want to know what tasks are currently available!  
+I'm quite busy with my main duties right now, and even though it's backend, what I'm working on is mostly BFF and I might not be able to help much with AI-related implementation tasks, so I think I need to ask what tasks are available and what prerequisite knowledge is required before I can decide if I can help.",20251016,1761308863.314599,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,a8171996-e42b-4df5-80f8-5f1c67871360,yhorita,"Ah, you're busy with your main duties, huh...  
+
+https://github.com/orgs/uniQorn-org/projects/1  
+Is the information a bit lacking even after looking at the tasks?",20251016,1761309954.353559,1760599468.763209,0,False
+ad6dbbbd-1e92-46d9-9b5f-f92d381cc696,F81CDA1B-4EDF-48BE-A108-D2AC50DD6B9A,konagata,"Thank you!  
+I looked at it, but with just this, I might not be able to say, ""Okay, I can do this!""...  
+I checked the PRs and issues too, but I can't see the overall picture, so I can't even decide which one I should start with...  
+Should I just focus on getting Graphiti running for now?",20251016,1761313760.769109,1760599468.763209,0,False
+01702b76-fa6e-4f6b-ba83-6901d21f828e,01702b76-fa6e-4f6b-ba83-6901d21f828e,sawaki oku,"I think the Graphiti tasks are quite complicated, so for now, something that seems quick to do might be to investigate how to detect when a Zoom meeting ends.",20251021,1761042700.112129,1761042700.112129,7,True
+01702b76-fa6e-4f6b-ba83-6901d21f828e,56dec92d-0f2d-4e7d-928f-a5949bbc9d32,sawaki oku,"The assumption is to have some program, like Python, run via webhook when a Zoom meeting actually ends.",20251021,1761042786.783829,1761042700.112129,0,False
+01702b76-fa6e-4f6b-ba83-6901d21f828e,1d105d36-1ea4-490c-b491-c1bf4ff83aea,sawaki oku,"I see. Has anyone touched this yet?  
+I might be able to do this.",20251021,1761042811.343439,1761042700.112129,0,False
+01702b76-fa6e-4f6b-ba83-6901d21f828e,d8939bde-59d8-4394-a1ad-890a3e653625,sawaki oku,"That's right.  
+I was assigned for now, but it would be better to distribute the tasks, so I would really appreciate it if you could help out. :pray:",20251021,1761042833.444209,1761042700.112129,0,False
+01702b76-fa6e-4f6b-ba83-6901d21f828e,44DB2212-9C10-4620-AC2A-7315AF737E89,yhorita,Understood!,20251021,1761045763.868979,1761042700.112129,0,False
+01702b76-fa6e-4f6b-ba83-6901d21f828e,3128c862-bc75-4729-8db4-9ea5d98467f3,sawaki oku,"@yudai tonoyama @issei matsumoto  
+Last night, Tonoyama-san created the webhook notification, but where should I ask Issei to take over?  
+
+Since the issue title is already for something that has been completed, I think it might be better to decide on responsibilities and create a new one!  
+
+Current understanding:  
+• Method to detect ← done  
+• Webhook notification ← Tonoyama-san  
+• Python script part to run from the notification ← not yet  
+https://uniqorntalk.slack.com/archives/C09JQQMUHCZ/p1761060851259959",20251021,1761046355.846949,1761042700.112129,0,False
+01702b76-fa6e-4f6b-ba83-6901d21f828e,d5af7176-c243-4fd2-9a0e-3c986c8e9399,sawaki oku,"What is the Leiden method? I looked it up and it seems to be an improved method of graph clustering called the Louvain method.
+
+The explanation of the Louvain method in this video was amazing.
+https://www.youtube.com/watch?v=Xt0vBtBY2BU
+
+In short, the Louvain method is a technique that greedily finds connections that maximize the connections within the same group compared to random graph connections.
+
+The Leiden method solves the local optimization problem of the Louvain method by:
+1. Checking for any disconnected parts within the clusters and ensuring they are internally connected (refinement).
+2. Combining the refined clusters into a single node to create a new contracted graph.
+    a. Creating a hierarchical structure graph.
+3. Repeating this recursively.",20251021,1761053069.015689,1761042700.112129,0,False
+01702b76-fa6e-4f6b-ba83-6901d21f828e,293d884c-880a-4fc8-adde-0a48e28b0352,sawaki oku,"1. TextUnit processing (segmentation)
+• Split the input document into the minimum unit for analysis called ""TextUnit."" TextUnits are also used as sources for subsequent graph extraction.
+2. Entity extraction (extraction of relationships and key claims)
+• Extract entities and relationships between entities from TextUnits using LLM, constructing a knowledge graph (nodes = entities, edges = relationships). Key claims (output as ""covariates (claim)"" in GraphRAG) are also supported, which include information on who said what, when, where, and based on which evidence.
+3. Community detection (hierarchical clustering with Leiden)
+• Generate communities hierarchically using Leiden (or Louvain) on the constructed graph.
+4. Summary generation (bottom-up)
+• Create a ""community summary (report)"" for each community using LLM. The official workflow specifies bottom-up summarization that utilizes lower-level summaries to compile higher-level ones. The output includes a title, summary, main text, and key insights (findings).",20251021,1761053947.035109,1761042700.112129,0,False
+d3588a0a-7d90-49e5-9263-cd6346dec862,d3588a0a-7d90-49e5-9263-cd6346dec862,yudai tonoyama,"!subteam^S09JN45NYKF Today, I can't develop due to an urgent matter, but if anyone is free, I would appreciate it if you could start on the task! :pray:
+First, let's go to github.com... I will create the org later!",20251022,1761060851.259959,1761060851.259959,6,True
+d3588a0a-7d90-49e5-9263-cd6346dec862,bf7ea7ea-963f-4096-be71-5b75381c3438,konagata,"@yudai tonoyama
+Do you think you can create the org?
+If it seems difficult, I might do it myself.",20251022,1761126229.226839,1761060851.259959,0,False
+d3588a0a-7d90-49e5-9263-cd6346dec862,547d548b-1d0a-4369-bcea-f08fe37233ed,konagata,"By the way, I have to do it...",20251022,1761126353.372039,1761060851.259959,0,False
+d3588a0a-7d90-49e5-9263-cd6346dec862,1576861c-ee1b-45c4-be7d-658037286c57,konagata,I wonder what to name it...,20251022,1761127219.344249,1761060851.259959,0,False
+d3588a0a-7d90-49e5-9263-cd6346dec862,daeb2765-67fc-475d-be4d-393f270301b1,konagata,"In Figma, it would be uniQorns.",20251022,1761127587.222239,1761060851.259959,0,False
+d3588a0a-7d90-49e5-9263-cd6346dec862,a04457f4-36a3-4418-ace0-54ae368a3d5b,yhorita,,20251022,1761127689.149119,1761060851.259959,0,False
+d3588a0a-7d90-49e5-9263-cd6346dec862,d7d186d0-2bcd-40f9-a6fd-e05efc3d0f4e,yhorita,@konagata,20251022,1761127694.226099,1761060851.259959,0,False
+f4a5f59a-22a3-44fa-b4e3-44e8ff9f058f,f4a5f59a-22a3-44fa-b4e3-44e8ff9f058f,shokichi takakura,"uniQorns seems impossible too.
+Maybe uniQorn-org...",20251025,1761368620.578369,1761368620.578369,2,True
+f4a5f59a-22a3-44fa-b4e3-44e8ff9f058f,E73C7B58-9052-4EF6-BE51-7722D64A3797,yudai tonoyama,Here!,20251025,1761369369.194349,1761368620.578369,0,False
+f4a5f59a-22a3-44fa-b4e3-44e8ff9f058f,7d89ec73-137e-412d-ba48-b605553eddcf,shokichi takakura,It seems good to invite Nagata-san as well.,20251025,1761375789.612579,1761368620.578369,0,False
