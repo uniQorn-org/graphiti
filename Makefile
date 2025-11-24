@@ -134,7 +134,7 @@ ingest-github: ## Ingest GitHub issues (requires GITHUB_TOKEN, GITHUB_OWNER, GIT
 		exit 1; \
 	fi
 	@echo "$(BLUE)Ingesting GitHub issues from $(GITHUB_OWNER)/$(GITHUB_REPO)...$(NC)"
-	docker-compose exec -e GITHUB_TOKEN=$(GITHUB_TOKEN) -e GITHUB_OWNER=$(GITHUB_OWNER) -e GITHUB_REPO=$(GITHUB_REPO) graphiti-mcp python src/ingest_github.py
+	docker-compose exec -e GITHUB_TOKEN=$(GITHUB_TOKEN) -e GITHUB_OWNER=$(GITHUB_OWNER) -e GITHUB_REPO=$(GITHUB_REPO) graphiti-mcp python src/scripts/ingest_github.py
 	@echo "$(GREEN)✓ GitHub issues ingested$(NC)"
 
 ingest-slack: ## Ingest Slack messages (requires SLACK_TOKEN, WORKSPACE_ID, CHANNEL_ID)
@@ -155,7 +155,7 @@ ingest-slack: ## Ingest Slack messages (requires SLACK_TOKEN, WORKSPACE_ID, CHAN
 	fi
 	@DAYS=$${DAYS:-7}; \
 	echo "$(BLUE)Ingesting Slack messages (last $$DAYS days)...$(NC)"; \
-	docker-compose exec -e SLACK_TOKEN=$(SLACK_TOKEN) graphiti-mcp python src/ingest_slack.py --token $(SLACK_TOKEN) --workspace-id $(WORKSPACE_ID) --channel-id $(CHANNEL_ID) --days $$DAYS
+	docker-compose exec -e SLACK_TOKEN=$(SLACK_TOKEN) graphiti-mcp python src/scripts/ingest_slack.py --token $(SLACK_TOKEN) --workspace-id $(WORKSPACE_ID) --channel-id $(CHANNEL_ID) --days $$DAYS
 	@echo "$(GREEN)✓ Slack messages ingested$(NC)"
 
 ingest-zoom: ## Ingest Zoom transcripts from data/zoom/ directory
@@ -165,7 +165,7 @@ ingest-zoom: ## Ingest Zoom transcripts from data/zoom/ directory
 		echo "Please place Zoom VTT transcript files in data/zoom/ directory"; \
 		exit 1; \
 	fi
-	docker-compose exec graphiti-mcp python src/ingest_zoom.py --zoom-dir data/zoom
+	docker-compose exec graphiti-mcp python src/scripts/ingest_zoom.py --data-dir data/zoom
 	@echo "$(GREEN)✓ Zoom transcripts ingested$(NC)"
 
 ##@ Database Operations

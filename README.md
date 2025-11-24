@@ -260,11 +260,20 @@ graphiti/
 ├── client/               # Pythonクライアント
 ├── server/               # MCPサーバー
 │   ├── src/             # サーバーソースコード
-│   │   ├── ingest_github.py     # GitHub取り込みスクリプト
-│   │   ├── ingest_slack.py      # Slack取り込みスクリプト
-│   │   ├── ingest_zoom.py       # Zoom取り込みスクリプト
-│   │   └── translator.py        # 翻訳ユーティリティ
-│   ├── scripts/         # 補助スクリプト
+│   │   ├── ingestion/           # データ取り込みモジュール
+│   │   │   ├── base.py         # 基底クラス
+│   │   │   ├── github.py       # GitHub取り込み
+│   │   │   ├── slack.py        # Slack取り込み
+│   │   │   └── zoom.py         # Zoom取り込み
+│   │   ├── scripts/            # CLIスクリプト
+│   │   │   ├── ingest_github.py
+│   │   │   ├── ingest_slack.py
+│   │   │   └── ingest_zoom.py
+│   │   ├── translator.py       # 翻訳ユーティリティ
+│   │   ├── config/             # 設定
+│   │   ├── models/             # データモデル
+│   │   ├── routers/            # APIルーター
+│   │   └── services/           # サービス層
 │   └── docs/            # サーバーのドキュメント
 ├── backend/              # 検索Bot API
 ├── frontend/             # 検索Bot UI
@@ -301,7 +310,7 @@ make ingest-github \
 docker compose exec -e GITHUB_TOKEN=ghp_xxxxxxxxxxxx \
   -e GITHUB_OWNER=uniQorn-org \
   -e GITHUB_REPO=uniqorn-zoom \
-  graphiti-mcp python src/ingest_github.py
+  graphiti-mcp python src/scripts/ingest_github.py
 ```
 
 Issue URLは `https://github.com/{owner}/{repo}/issues/{number}` 形式で保存されます。
@@ -318,7 +327,7 @@ make ingest-slack \
 
 # 手動で実行
 docker compose exec -e SLACK_TOKEN=xoxc-xxxxxxxxxxxx \
-  graphiti-mcp python src/ingest_slack.py \
+  graphiti-mcp python src/scripts/ingest_slack.py \
   --token xoxc-xxxxxxxxxxxx \
   --workspace-id T09HNJQG1JA \
   --channel-id C09JQQMUHCZ \
@@ -337,7 +346,7 @@ cp /path/to/meeting_transcript.vtt data/zoom/
 make ingest-zoom
 
 # 手動で実行
-docker compose exec graphiti-mcp python src/ingest_zoom.py --zoom-dir data/zoom
+docker compose exec graphiti-mcp python src/scripts/ingest_zoom.py --data-dir data/zoom
 ```
 
 文字起こしファイルはMinIOにアップロードされ、URLは `http://localhost:20734/zoom-transcripts/{uuid}_transcript.vtt` 形式になります。
@@ -347,9 +356,9 @@ docker compose exec graphiti-mcp python src/ingest_zoom.py --zoom-dir data/zoom
 翻訳を無効化するには `--no-translate` フラグを使用します：
 
 ```bash
-docker compose exec graphiti-mcp python src/ingest_github.py --no-translate
-docker compose exec graphiti-mcp python src/ingest_slack.py --no-translate --token xxx ...
-docker compose exec graphiti-mcp python src/ingest_zoom.py --no-translate --zoom-dir data/zoom
+docker compose exec graphiti-mcp python src/scripts/ingest_github.py --no-translate
+docker compose exec graphiti-mcp python src/scripts/ingest_slack.py --no-translate --token xxx ...
+docker compose exec graphiti-mcp python src/scripts/ingest_zoom.py --no-translate --data-dir data/zoom
 ```
 
 ### ソースURLの確認方法
