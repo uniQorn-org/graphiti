@@ -2,6 +2,7 @@
 
 from config.schema import DatabaseConfig, EmbedderConfig, LLMConfig
 from openai import AsyncAzureOpenAI
+from utils.proxy_utils import create_async_httpx_client, log_proxy_status
 
 # Try to import FalkorDriver if available
 try:
@@ -103,6 +104,9 @@ class LLMClientFactory:
 
         logger = logging.getLogger(__name__)
 
+        # Log proxy configuration status
+        log_proxy_status()
+
         provider = config.provider.lower()
 
         match provider:
@@ -134,15 +138,24 @@ class LLMClientFactory:
                     max_tokens=config.max_tokens,
                 )
 
+                # Create httpx client with proxy configuration
+                http_client = create_async_httpx_client()
+
                 # Only pass reasoning/verbosity parameters for reasoning models (gpt-5 family)
                 if is_reasoning_model:
                     return OpenAIClient(
-                        config=llm_config, reasoning="minimal", verbosity="low"
+                        config=llm_config,
+                        reasoning="minimal",
+                        verbosity="low",
+                        http_client=http_client
                     )
                 else:
                     # For non-reasoning models, explicitly pass None to disable these parameters
                     return OpenAIClient(
-                        config=llm_config, reasoning=None, verbosity=None
+                        config=llm_config,
+                        reasoning=None,
+                        verbosity=None,
+                        http_client=http_client
                     )
 
             case "azure_openai":
@@ -284,7 +297,11 @@ class EmbedderFactory:
                     api_key=api_key,
                     embedding_model=config.model,
                 )
-                return OpenAIEmbedder(config=embedder_config)
+
+                # Create httpx client with proxy configuration
+                http_client = create_async_httpx_client()
+
+                return OpenAIEmbedder(config=embedder_config, http_client=http_client)
 
             case "azure_openai":
                 if not HAS_AZURE_EMBEDDER:

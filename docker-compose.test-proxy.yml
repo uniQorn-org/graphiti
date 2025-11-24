@@ -1,0 +1,52 @@
+# Docker Compose configuration for test proxy server
+# This file sets up a local proxy server for testing proxy configuration
+# without needing access to a corporate network
+#
+# Usage:
+#   docker-compose -f docker-compose.test-proxy.yml up -d
+#
+# Then set these environment variables:
+#   export OPENAI_PROXY=http://localhost:8080
+#
+# To view proxy traffic:
+#   Open http://localhost:8081 in your browser (mitmweb UI)
+
+version: '3.8'
+
+services:
+  # mitmproxy: A powerful HTTP/HTTPS proxy with web UI for inspecting traffic
+  test-proxy:
+    image: mitmproxy/mitmproxy:latest
+    container_name: graphiti-test-proxy
+    command: mitmweb --web-host 0.0.0.0 --web-port 8081 --set block_global=false
+    ports:
+      - "8080:8080"  # Proxy port (use this in OPENAI_PROXY)
+      - "8081:8081"  # Web UI port (open in browser)
+    networks:
+      - proxy-test-network
+    restart: unless-stopped
+    environment:
+      # Allow all connections without client certificate verification
+      - MITMWEB_SSL_INSECURE=1
+    volumes:
+      # Persist mitmproxy certificates
+      - mitmproxy-certs:/home/mitmproxy/.mitmproxy
+
+  # Simple HTTP proxy alternative (if you don't need HTTPS inspection)
+  # Uncomment if you prefer a simpler proxy without SSL certificate issues
+  # simple-proxy:
+  #   image: vimagick/tinyproxy:latest
+  #   container_name: graphiti-simple-proxy
+  #   ports:
+  #     - "8888:8888"
+  #   networks:
+  #     - proxy-test-network
+  #   restart: unless-stopped
+
+networks:
+  proxy-test-network:
+    driver: bridge
+
+volumes:
+  mitmproxy-certs:
+    driver: local

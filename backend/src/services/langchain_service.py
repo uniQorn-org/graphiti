@@ -9,6 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from ..models.schemas import ChatMessage, ChatResponse, SearchResult
 from .graphiti_service import GraphitiService
+from ..utils.proxy_utils import create_httpx_client, log_proxy_status
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,19 @@ class LangChainService:
             model: 使用するモデル名
         """
         self.graphiti = graphiti_service
+
+        # Log proxy configuration status
+        log_proxy_status()
+
+        # Create httpx client with proxy configuration
+        http_client = create_httpx_client()
+
         self.llm = ChatOpenAI(
-            api_key=openai_api_key, model=model, temperature=0.7, streaming=False
+            api_key=openai_api_key,
+            model=model,
+            temperature=0.7,
+            streaming=False,
+            http_client=http_client
         )
 
         # プロンプトテンプレート

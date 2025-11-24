@@ -6,26 +6,29 @@ Translates Japanese text to English for better knowledge graph processing.
 
 import os
 from openai import OpenAI
+from utils.proxy_utils import create_httpx_client
 
 def translate_to_english(text: str, model: str = "gpt-4o-mini") -> str:
     """
     Translate text to English using OpenAI API.
-    
+
     Args:
         text: Text to translate (any language)
         model: OpenAI model to use
-        
+
     Returns:
         Translated English text
     """
     if not text or not text.strip():
         return text
-    
+
     # Check if text is already in English (basic heuristic)
     if is_mostly_ascii(text):
         return text
-    
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+    # Create httpx client with proxy configuration
+    http_client = create_httpx_client()
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), http_client=http_client)
     
     try:
         response = client.chat.completions.create(
