@@ -11,6 +11,7 @@ class CitationInfo(TypedDict):
     source: str
     source_description: str
     created_at: str | None
+    source_url: str | None
 
 
 class FactWithCitations(TypedDict):
@@ -48,6 +49,7 @@ class CitationChainEntry(TypedDict):
     source_description: str
     created_at: str | None
     operation: str  # "created", "updated", "referenced"
+    source_url: str | None
 
 
 class FactSearchWithCitationsResponse(TypedDict):

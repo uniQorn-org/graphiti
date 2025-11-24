@@ -364,6 +364,7 @@ async def add_memory(
     group_id: str | None = None,
     source: str = "text",
     source_description: str = "",
+    source_url: str | None = None,
     uuid: str | None = None,
 ) -> SuccessResponse | ErrorResponse:
     """Add an episode to memory. This is the primary way to add information to the graph.
@@ -383,6 +384,7 @@ async def add_memory(
                                - 'json': For structured data
                                - 'message': For conversation-style content
         source_description (str, optional): Description of the source
+        source_url (str, optional): URL of the source (e.g., Slack message link, GitHub issue URL)
         uuid (str, optional): Optional UUID for the episode
 
     Examples:
@@ -430,6 +432,7 @@ async def add_memory(
             name=name,
             content=episode_body,
             source_description=source_description,
+            source_url=source_url,
             episode_type=episode_type,
             entity_types=graphiti_service.entity_types,
             uuid=uuid or None,  # Ensure None is passed if uuid is None

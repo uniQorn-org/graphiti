@@ -111,6 +111,9 @@ class EpisodeCreateRequest(BaseModel):
     source_description: Optional[str] = Field(
         "", description="Description of the source"
     )
+    source_url: Optional[str] = Field(
+        None, description="URL of the source (Slack message, GitHub issue, etc.)"
+    )
     uuid: Optional[str] = Field(None, description="Optional custom UUID")
 
 

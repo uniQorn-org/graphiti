@@ -104,6 +104,29 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results }) => {
                         })}
                       </div>
                     )}
+                    {edge.citations && edge.citations.length > 0 && (
+                      <div style={styles.citationsContainer}>
+                        <div style={styles.citationsTitle}>📚 ソース:</div>
+                        {edge.citations.map((citation, idx) => (
+                          <div key={idx} style={styles.citation}>
+                            {citation.source_url ? (
+                              <a
+                                href={citation.source_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={styles.citationLink}
+                              >
+                                🔗 {citation.episode_name}
+                              </a>
+                            ) : (
+                              <span style={styles.citationText}>
+                                📄 {citation.episode_name}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {edge.original_fact && edge.original_fact !== edge.fact && (
                       <details style={styles.originalFactDetails}>
                         <summary style={styles.originalFactSummary}>
@@ -256,6 +279,34 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     color: '#555',
     borderLeft: '3px solid #1976d2',
+  },
+  citationsContainer: {
+    marginTop: '8px',
+    padding: '8px',
+    backgroundColor: '#f5f9ff',
+    borderRadius: '4px',
+    borderLeft: '3px solid #2196f3',
+  },
+  citationsTitle: {
+    fontSize: '12px',
+    fontWeight: 'bold',
+    color: '#1976d2',
+    marginBottom: '6px',
+  },
+  citation: {
+    marginBottom: '4px',
+  },
+  citationLink: {
+    fontSize: '12px',
+    color: '#1976d2',
+    textDecoration: 'none',
+    display: 'inline-block',
+    padding: '2px 0',
+    transition: 'color 0.2s',
+  },
+  citationText: {
+    fontSize: '12px',
+    color: '#666',
   },
   editButton: {
     padding: '6px 12px',

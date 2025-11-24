@@ -43,6 +43,15 @@ export interface EntityNode {
   attributes: Record<string, any>;
 }
 
+export interface CitationInfo {
+  episode_uuid: string;
+  episode_name: string;
+  source: string;
+  source_description: string;
+  created_at: string | null;
+  source_url: string | null;
+}
+
 export interface EntityEdge {
   uuid: string;
   source_node_uuid: string;
@@ -54,6 +63,7 @@ export interface EntityEdge {
   invalid_at?: string;
   expired_at?: string;
   episodes: string[];
+  citations?: CitationInfo[]; // Citations with source URLs
   // 修正履歴フィールド
   updated_at?: string;
   original_fact?: string;

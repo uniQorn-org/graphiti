@@ -2,6 +2,8 @@
 Graphitiサービス - ナレッジグラフ管理
 """
 import logging
+import sys
+from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
 from graphiti_core import Graphiti
@@ -12,7 +14,21 @@ from ..models.schemas import (
     SearchResult,
     UpdateFactResponse,
     AddEpisodeResponse,
+    CitationInfo,
 )
+
+# Import citation service from MCP server
+# Add the server/src directory to the path to import citation_service
+server_src_path = Path(__file__).parent.parent.parent.parent / "server" / "src"
+if str(server_src_path) not in sys.path:
+    sys.path.insert(0, str(server_src_path))
+
+try:
+    from services.citation_service import get_episode_citations
+except ImportError:
+    # Fallback if import fails
+    async def get_episode_citations(driver, entity_uuid, entity_type="edge"):
+        return []
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +126,7 @@ class GraphitiService:
                             )
                         )
 
-            # カスタムフィールド（updated_at, original_fact, update_reason）をNeo4jから取得
+            # カスタムフィールド（updated_at, original_fact, update_reason）とcitationsをNeo4jから取得
             if edge_uuids:
                 query = """
                 UNWIND $uuids AS uuid
@@ -133,18 +149,35 @@ class GraphitiService:
                         for record in records
                     }
 
-                    # エッジにカスタムフィールドを追加
-                    for i, edge in enumerate(edges):
-                        if edge.uuid in custom_fields:
-                            fields = custom_fields[edge.uuid]
-                            # model_dump()からカスタムフィールドを除外して再構築
-                            edge_dict = edge.model_dump(exclude={'updated_at', 'original_fact', 'update_reason'})
-                            edges[i] = EntityEdge(
-                                **edge_dict,
-                                updated_at=fields["updated_at"],
-                                original_fact=fields["original_fact"],
-                                update_reason=fields["update_reason"],
+                    # 各エッジのcitationsを取得
+                    citations_map = {}
+                    for edge_uuid in edge_uuids:
+                        try:
+                            raw_citations = await get_episode_citations(
+                                self.client.driver, edge_uuid, "edge"
                             )
+                            # Convert dict citations to CitationInfo objects
+                            citations_map[edge_uuid] = [
+                                CitationInfo(**citation) for citation in raw_citations
+                            ]
+                        except Exception as e:
+                            logger.error(f"Error fetching citations for edge {edge_uuid}: {e}")
+                            citations_map[edge_uuid] = []
+
+                    # エッジにカスタムフィールドとcitationsを追加
+                    for i, edge in enumerate(edges):
+                        fields = custom_fields.get(edge.uuid, {})
+                        edge_citations = citations_map.get(edge.uuid, [])
+
+                        # model_dump()からカスタムフィールドを除外して再構築
+                        edge_dict = edge.model_dump(exclude={'updated_at', 'original_fact', 'update_reason', 'citations'})
+                        edges[i] = EntityEdge(
+                            **edge_dict,
+                            updated_at=fields.get("updated_at"),
+                            original_fact=fields.get("original_fact"),
+                            update_reason=fields.get("update_reason"),
+                            citations=edge_citations,
+                        )
 
             return SearchResult(
                 nodes=nodes, edges=edges, total_count=len(nodes) + len(edges)

@@ -12,6 +12,7 @@ from ..models.schemas import (
     SearchResult,
     UpdateFactResponse,
     AddEpisodeResponse,
+    CitationInfo,
 )
 
 logger = logging.getLogger(__name__)
@@ -86,6 +87,10 @@ class MCPClientService:
             logger.info(f"検索結果数: {len(results)}")
             if results:
                 for fact in results:
+                    # Extract citations from the MCP response
+                    citations_data = fact.get("citations", [])
+                    citations = [CitationInfo(**c) for c in citations_data] if citations_data else []
+
                     edge = EntityEdge(
                         uuid=fact.get("uuid", ""),
                         source_node_uuid=fact.get("source_node_uuid", ""),
@@ -97,6 +102,7 @@ class MCPClientService:
                         invalid_at=fact.get("invalid_at"),
                         expired_at=fact.get("expired_at"),
                         episodes=fact.get("episodes", []),
+                        citations=citations,
                         updated_at=fact.get("updated_at"),
                         original_fact=fact.get("original_fact"),
                         update_reason=fact.get("update_reason"),

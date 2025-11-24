@@ -106,6 +106,7 @@ class QueueService:
         name: str,
         content: str,
         source_description: str,
+        source_url: str | None,
         episode_type: Any,
         entity_types: Any,
         uuid: str | None,
@@ -117,6 +118,7 @@ class QueueService:
             name: Name of the episode
             content: Episode content
             source_description: Description of the episode source
+            source_url: URL of the source (optional)
             episode_type: Type of the episode
             entity_types: Entity types for extraction
             uuid: Episode UUID
@@ -134,11 +136,19 @@ class QueueService:
             try:
                 logger.info(f"Processing episode {uuid} for group {group_id}")
 
+                # Embed source_url into source_description if provided
+                final_source_description = source_description
+                if source_url:
+                    if source_description:
+                        final_source_description = f"{source_description}, source_url: {source_url}"
+                    else:
+                        final_source_description = f"source_url: {source_url}"
+
                 # Process the episode using the graphiti client
                 await self._graphiti_client.add_episode(
                     name=name,
                     episode_body=content,
-                    source_description=source_description,
+                    source_description=final_source_description,
                     source=episode_type,
                     group_id=group_id,
                     reference_time=datetime.now(timezone.utc),

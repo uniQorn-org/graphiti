@@ -75,6 +75,7 @@ async def create_episode_api(
             name=episode_request.name,
             content=episode_request.content,
             source_description=episode_request.source_description or "",
+            source_url=episode_request.source_url,
             episode_type=episode_type,
             entity_types=graphiti_service.entity_types,
             uuid=episode_request.uuid or None,
@@ -144,7 +145,11 @@ async def search_graph_api(request: Request, graphiti_service, config) -> JSONRe
                 center_node_uuid=search_request.center_node_uuid,
             )
 
-            results = [format_fact_result(edge) for edge in relevant_edges]
+            # Format results with citations (use asyncio.gather for parallel fetching)
+            import asyncio
+            results = await asyncio.gather(*[
+                format_fact_result(edge, client.driver) for edge in relevant_edges
+            ])
 
         elif search_request.search_type == "nodes":
             # Search for nodes (EntityNodes)

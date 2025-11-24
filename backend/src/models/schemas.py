@@ -6,6 +6,16 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 
+class CitationInfo(BaseModel):
+    """Citation information for an entity"""
+    episode_uuid: str
+    episode_name: str
+    source: str
+    source_description: str
+    created_at: Optional[str] = None
+    source_url: Optional[str] = None
+
+
 class EntityNode(BaseModel):
     """エンティティノード"""
     uuid: str
@@ -28,6 +38,7 @@ class EntityEdge(BaseModel):
     invalid_at: Optional[datetime] = None
     expired_at: Optional[datetime] = None
     episodes: List[str] = []
+    citations: List[CitationInfo] = []
     # 修正履歴フィールド
     updated_at: Optional[datetime] = None
     original_fact: Optional[str] = None

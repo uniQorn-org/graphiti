@@ -16,7 +16,10 @@ RUN uv pip install --system \
     "pydantic-settings>=2.0.0" \
     "pandas>=2.3.3" \
     "tqdm>=4.67.1" \
-    "openai>=1.91.0"
+    "openai>=1.91.0" \
+    "boto3>=1.28.0" \
+    "PyGithub>=2.1.0" \
+    "requests>=2.31.0"
 
 EXPOSE 8001
 

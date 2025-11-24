@@ -20,6 +20,29 @@ from mcp.client.streamable_http import streamablehttp_client
 from tqdm import tqdm
 
 
+def build_slack_url(workspace_id: str, channel_id: str, ts: str, thread_ts: str | None = None) -> str:
+    """Build Slack message URL.
+
+    Args:
+        workspace_id: Workspace ID (e.g., T09HNJQG1JA)
+        channel_id: Channel ID (e.g., C09JQQMUHCZ)
+        ts: Message timestamp
+        thread_ts: Thread timestamp (if in thread)
+
+    Returns:
+        Slack message URL
+    """
+    # Convert timestamp to message ID format (remove decimal point)
+    msg_id = ts.replace(".", "")
+    base_url = f"https://app.slack.com/client/{workspace_id}/{channel_id}/p{msg_id}"
+
+    if thread_ts and thread_ts != ts:
+        # Thread reply URL
+        return f"{base_url}?thread_ts={thread_ts}&cid={channel_id}"
+
+    return base_url
+
+
 def chunk_slack_data_enhanced(threads_df: pd.DataFrame) -> list[dict]:
     chunks = []
 
@@ -149,7 +172,12 @@ def chunk_slack_data_enhanced(threads_df: pd.DataFrame) -> list[dict]:
     return chunks
 
 
-async def add_slack_data_enhanced(session: ClientSession, chunked: bool = True) -> None:
+async def add_slack_data_enhanced(
+    session: ClientSession,
+    chunked: bool = True,
+    workspace_id: str = "T09HNJQG1JA",
+    channel_id: str = "C09JQQMUHCZ",
+) -> None:
     script_dir = Path(__file__).parent.parent
 
     # Use English CSV by default if available, fallback to original
@@ -214,11 +242,18 @@ async def add_slack_data_enhanced(session: ClientSession, chunked: bool = True) 
                 # 旧形式が残っている場合（移行期間用）
                 metadata_str = f"type: {chunk['type']}"
 
+            # Build source URL
+            if chunk["type"] == "thread":
+                source_url = build_slack_url(workspace_id, channel_id, chunk["timestamp_str"], chunk["thread_ts"])
+            else:
+                source_url = build_slack_url(workspace_id, channel_id, chunk["timestamp_str"])
+
             arguments = {
                 "name": chunk["name"],
                 "episode_body": chunk["body"],
                 "source": "message",  # EpisodeType.message に対応（会話フォーマット）
                 "source_description": metadata_str,
+                "source_url": source_url,
                 # group_id指定なし
             }
 
