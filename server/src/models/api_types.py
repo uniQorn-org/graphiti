@@ -64,6 +64,9 @@ class FactUpdateResponse(BaseModel):
     old_uuid: str
     new_uuid: str
     message: str
+    new_edge: Optional[dict[str, Any]] = Field(
+        None, description="The newly created edge with citations"
+    )
 
 
 class FactDeleteResponse(BaseModel):

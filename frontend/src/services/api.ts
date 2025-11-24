@@ -105,6 +105,7 @@ export interface UpdateFactResponse {
   old_uuid: string;
   new_uuid: string;
   message: string;
+  new_edge?: EntityEdge; // The newly created edge with citations
 }
 
 export interface AddEpisodeRequest {

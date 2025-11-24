@@ -34,13 +34,23 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results }) => {
       if (response.status === 'updated') {
         // ローカル状態を更新: 古いfactを削除し、新しいfactを追加
         setLocalEdges((prev) => {
-          const updatedEdges = prev.filter((e) => e.uuid !== edgeUuid);
-          // 注: 新しいedgeの詳細情報がないため、リストから削除するのみ
-          // 実際には新しいedgeを追加するには再検索が必要
-          return updatedEdges;
+          const filtered = prev.filter((e) => e.uuid !== edgeUuid);
+
+          // 新しいedgeがレスポンスに含まれている場合は追加
+          if (response.new_edge) {
+            return [...filtered, response.new_edge];
+          }
+
+          // 含まれていない場合は削除のみ（後方互換性のため）
+          return filtered;
         });
         setEditingEdge(null);
-        showToast(`Factを更新しました！\n旧UUID: ${response.old_uuid}\n新UUID: ${response.new_uuid}`, 'success');
+
+        // Citations情報があれば表示
+        const citationsInfo = response.new_edge?.citations?.length
+          ? `\n📚 ソース: ${response.new_edge.citations.length}件のリンクを保持`
+          : '';
+        showToast(`Factを更新しました！\n旧UUID: ${response.old_uuid}\n新UUID: ${response.new_uuid}${citationsInfo}`, 'success');
       } else {
         showToast(`更新に失敗しました: ${response.message}`, 'error');
       }

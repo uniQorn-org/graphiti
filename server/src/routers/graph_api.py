@@ -492,7 +492,7 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
             name=update_request.fact,
             fact=update_request.fact,
             fact_embedding=embedding_vector,
-            episodes=[],
+            episodes=old_edge.episodes,  # Inherit episodes from old edge to preserve citations
             created_at=datetime.now(),
             expired_at=None,
             invalid_at=None,
@@ -546,11 +546,17 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
             logger.error("=" * 80)
             raise
 
+        # Fetch the new edge with citations for response
+        logger.info("📚 Fetching citations for new edge...")
+        new_edge_with_citations = await format_fact_result(new_edge, client.driver)
+        logger.info(f"   ✅ Citations fetched: {len(new_edge_with_citations.get('citations', []))} citation(s)")
+
         response = FactUpdateResponse(
             status="updated",
             old_uuid=old_uuid,
             new_uuid=new_edge.uuid,
             message=f"Fact updated successfully. Old fact {old_uuid} expired, new fact {new_edge.uuid} created",
+            new_edge=new_edge_with_citations,
         )
 
         return create_cors_response(response.model_dump())
