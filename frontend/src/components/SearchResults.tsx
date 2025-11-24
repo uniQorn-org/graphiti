@@ -1,0 +1,293 @@
+/**
+ * 検索結果表示コンポーネント
+ */
+import React, { useState, useEffect } from 'react';
+import { SearchResult, EntityEdge, factsAPI } from '../services/api';
+import FactEditor from './FactEditor';
+
+interface SearchResultsProps {
+  results: SearchResult;
+}
+
+const SearchResults: React.FC<SearchResultsProps> = ({ results }) => {
+  const [editingEdge, setEditingEdge] = useState<EntityEdge | null>(null);
+  const [localEdges, setLocalEdges] = useState<EntityEdge[]>(results.edges);
+
+  // resultsが変わったらlocalEdgesを更新
+  useEffect(() => {
+    setLocalEdges(results.edges);
+  }, [results]);
+
+  const handleEditFact = (edge: EntityEdge) => {
+    setEditingEdge(edge);
+  };
+
+  const handleSaveFact = async (edgeUuid: string, newFact: string, reason?: string) => {
+    try {
+      const response = await factsAPI.updateFact(edgeUuid, { new_fact: newFact, reason });
+
+      if (response.success && response.updated_edge) {
+        // ローカル状態を更新
+        setLocalEdges((prev) =>
+          prev.map((e) => (e.uuid === edgeUuid ? response.updated_edge! : e))
+        );
+        setEditingEdge(null);
+        alert('Factを更新しました！');
+      } else {
+        alert(`更新に失敗しました: ${response.message}`);
+      }
+    } catch (error) {
+      console.error('Fact更新エラー:', error);
+      alert('エラーが発生しました');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingEdge(null);
+  };
+
+  return (
+    <div style={styles.container}>
+      <h2 style={styles.title}>検索結果</h2>
+
+      {results.total_count === 0 ? (
+        <div style={styles.noResults}>検索結果がありません</div>
+      ) : (
+        <>
+          {/* エッジ（関係性）の表示 */}
+          {localEdges.length > 0 && (
+            <div style={styles.section}>
+              <h3 style={styles.sectionTitle}>
+                関連する事実 ({localEdges.length}件)
+              </h3>
+              {localEdges.map((edge) => (
+                <div
+                  key={edge.uuid}
+                  style={{
+                    ...styles.edgeCard,
+                    ...(edge.updated_at && styles.edgeCardEdited),
+                  }}
+                >
+                  {edge.updated_at && (
+                    <div style={styles.editedBadge}>📝 修正済み</div>
+                  )}
+                  <div style={styles.edgeName}>{edge.name}</div>
+                  <div style={styles.edgeFact}>{edge.fact}</div>
+
+                  <div style={styles.metaContainer}>
+                    {edge.valid_at && (
+                      <div style={styles.edgeMeta}>
+                        📅 出来事の日時: {new Date(edge.valid_at).toLocaleDateString('ja-JP', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </div>
+                    )}
+                    {edge.updated_at && (
+                      <div style={styles.edgeMeta}>
+                        🕒 最終更新: {new Date(edge.updated_at).toLocaleString('ja-JP', {
+                          year: 'numeric',
+                          month: 'numeric',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </div>
+                    )}
+                    {edge.original_fact && edge.original_fact !== edge.fact && (
+                      <details style={styles.originalFactDetails}>
+                        <summary style={styles.originalFactSummary}>
+                          元の内容を表示
+                        </summary>
+                        <div style={styles.originalFactContent}>
+                          {edge.original_fact}
+                        </div>
+                      </details>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handleEditFact(edge)}
+                    style={styles.editButton}
+                  >
+                    ✏️ 修正
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ノード（エンティティ）の表示 */}
+          {results.nodes.length > 0 && (
+            <div style={styles.section}>
+              <h3 style={styles.sectionTitle}>
+                関連するエンティティ ({results.nodes.length}件)
+              </h3>
+              {results.nodes.map((node) => (
+                <div key={node.uuid} style={styles.nodeCard}>
+                  <div style={styles.nodeName}>{node.name}</div>
+                  {node.summary && (
+                    <div style={styles.nodeSummary}>{node.summary}</div>
+                  )}
+                  {node.labels.length > 0 && (
+                    <div style={styles.nodeLabels}>
+                      {node.labels.map((label, idx) => (
+                        <span key={idx} style={styles.label}>
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Fact編集モーダル */}
+      {editingEdge && (
+        <FactEditor
+          edge={editingEdge}
+          onSave={handleSaveFact}
+          onCancel={handleCancelEdit}
+        />
+      )}
+    </div>
+  );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    padding: '20px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    height: '100%',
+    overflowY: 'auto',
+  },
+  title: {
+    margin: '0 0 20px 0',
+    fontSize: '20px',
+    fontWeight: 'bold',
+  },
+  noResults: {
+    textAlign: 'center',
+    color: '#999',
+    padding: '40px 20px',
+  },
+  section: {
+    marginBottom: '30px',
+  },
+  sectionTitle: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    marginBottom: '12px',
+    color: '#333',
+  },
+  edgeCard: {
+    border: '1px solid #e0e0e0',
+    borderRadius: '4px',
+    padding: '12px',
+    marginBottom: '10px',
+    backgroundColor: '#fafafa',
+    position: 'relative',
+  },
+  edgeCardEdited: {
+    backgroundColor: '#fffbf0',
+    borderColor: '#ffa726',
+    borderWidth: '2px',
+  },
+  editedBadge: {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
+    backgroundColor: '#ffa726',
+    color: 'white',
+    padding: '3px 8px',
+    borderRadius: '12px',
+    fontSize: '11px',
+    fontWeight: 'bold',
+  },
+  edgeName: {
+    fontWeight: 'bold',
+    color: '#1976d2',
+    marginBottom: '8px',
+    fontSize: '14px',
+  },
+  edgeFact: {
+    marginBottom: '12px',
+    lineHeight: '1.5',
+    fontSize: '14px',
+  },
+  metaContainer: {
+    marginBottom: '12px',
+  },
+  edgeMeta: {
+    fontSize: '12px',
+    color: '#666',
+    marginBottom: '4px',
+  },
+  originalFactDetails: {
+    marginTop: '8px',
+    fontSize: '12px',
+  },
+  originalFactSummary: {
+    cursor: 'pointer',
+    color: '#1976d2',
+    userSelect: 'none',
+    fontSize: '12px',
+  },
+  originalFactContent: {
+    marginTop: '6px',
+    padding: '8px',
+    backgroundColor: '#f0f0f0',
+    borderRadius: '4px',
+    fontSize: '13px',
+    color: '#555',
+    borderLeft: '3px solid #1976d2',
+  },
+  editButton: {
+    padding: '6px 12px',
+    backgroundColor: '#4caf50',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '13px',
+  },
+  nodeCard: {
+    border: '1px solid #e0e0e0',
+    borderRadius: '4px',
+    padding: '12px',
+    marginBottom: '10px',
+    backgroundColor: '#f9f9f9',
+  },
+  nodeName: {
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: '8px',
+    fontSize: '15px',
+  },
+  nodeSummary: {
+    marginBottom: '8px',
+    lineHeight: '1.5',
+    fontSize: '13px',
+    color: '#555',
+  },
+  nodeLabels: {
+    display: 'flex',
+    gap: '5px',
+    flexWrap: 'wrap',
+  },
+  label: {
+    padding: '3px 8px',
+    backgroundColor: '#e3f2fd',
+    borderRadius: '3px',
+    fontSize: '11px',
+    color: '#1976d2',
+  },
+};
+
+export default SearchResults;

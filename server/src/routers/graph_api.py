@@ -317,12 +317,16 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
         source_uuid = update_request.source_node_uuid or old_edge.source_node_uuid
         target_uuid = update_request.target_node_uuid or old_edge.target_node_uuid
 
+        # Generate embedding for the new fact
+        embedding_response = await client.embedder.create(input=[update_request.fact])
+        embedding_vector = embedding_response.data[0].embedding
+
         # Create new fact
         new_edge = EntityEdge(
             uuid=None,  # Will be auto-generated
             name=update_request.fact,
             fact=update_request.fact,
-            fact_embedding=None,  # Will be generated
+            fact_embedding=embedding_vector,
             episodes=[],
             created_at=datetime.now(),
             expired_at=None,

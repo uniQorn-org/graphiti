@@ -47,13 +47,18 @@ docker-compose up -d
 ```
 
 起動するサービス:
-- **neo4j**: Neo4j 5.26.16 (APOC & GDS プラグイン付き)
+- **neo4j**: Neo4j 5.26.16 (APOCプラグイン付き)
   - Browser UI: http://localhost:7474
   - Bolt: bolt://localhost:7687
   - ユーザー名: `neo4j`
   - パスワード: `password123`
 - **graphiti-mcp**: Graphiti MCPサーバー
   - MCP Endpoint: http://localhost:8001/mcp/
+- **search-bot-backend**: 社内検索Bot API (FastAPI + LangChain)
+  - API Endpoint: http://localhost:20001/api
+  - Docs: http://localhost:20001/docs
+- **search-bot-frontend**: 社内検索Bot UI (React)
+  - Web UI: http://localhost:20002
 
 ### 4. 動作確認
 
@@ -225,6 +230,69 @@ docker-compose down -v
 docker-compose up -d
 ```
 
+## 社内検索Bot
+
+### 概要
+
+LangChain + Graphitiを使った対話型社内検索システムです。
+
+### 主な機能
+
+1. **AIチャット**
+   - 自然言語で質問すると、ナレッジグラフを検索して回答
+   - チャット履歴を保持
+   - 検索結果を可視化
+
+2. **手動検索**
+   - キーワードでナレッジグラフを直接検索
+   - エンティティと関係性を表示
+
+3. **Fact編集**
+   - 検索結果から間違った情報を発見
+   - クリックで修正可能
+   - 修正理由を記録
+
+### 使い方
+
+1. **起動**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **アクセス**
+   - フロントエンド: http://localhost:20002
+   - バックエンドAPI: http://localhost:20001/docs
+
+3. **チャットで質問**
+   - 「山田さんの役割は？」などと入力
+   - AIが検索結果をもとに回答
+   - 右パネルに関連Factsが表示
+
+4. **Factを修正**
+   - 表示されたFactの「修正」ボタンをクリック
+   - 新しいFactを入力して保存
+
+5. **手動検索**
+   - 「検索」タブに切り替え
+   - キーワードを入力して検索
+
+### アーキテクチャ
+
+```
+[React Frontend] (Port 20002)
+      ↓ REST API
+[FastAPI Backend] (Port 20001)
+      ↓ LangChain
+[Graphiti Core]
+      ↓
+[Neo4j] (Port 7687)
+```
+
+### 詳細ドキュメント
+
+- [バックエンド README](backend/README.md)
+- [フロントエンド README](frontend/README.md)
+
 ## 関連ドキュメント
 
 - [Graphiti公式ドキュメント](https://help.getzep.com/graphiti/)
@@ -239,9 +307,3 @@ Apache-2.0
 ## コントリビューション
 
 Issue・Pull Requestを歓迎します！
-
-## サポート
-
-問題が発生した場合:
-1. [Issues](https://github.com/uniQorn-org/graphiti/issues)を確認
-2. 新しいIssueを作成
