@@ -17,6 +17,7 @@ def get_proxy_config() -> Optional[Dict[str, str]]:
     """Get proxy configuration from environment variables.
 
     Reads proxy settings from the following environment variables:
+    - PROXY_USE: Enable/disable proxy (TRUE/FALSE). If FALSE or not set, proxy is disabled.
     - OPENAI_PROXY: Proxy URL (e.g., http://proxy.company.com:8080)
     - OPENAI_PROXY_USERNAME: Optional username for proxy authentication
     - OPENAI_PROXY_PASSWORD: Optional password for proxy authentication
@@ -26,9 +27,15 @@ def get_proxy_config() -> Optional[Dict[str, str]]:
         Dictionary with proxy configuration for http:// and https://, or None if no proxy is configured.
         Format: {"http://": "proxy_url", "https://": "proxy_url"}
     """
+    # Check if proxy is enabled
+    proxy_use = os.getenv("PROXY_USE", "FALSE").upper()
+    if proxy_use != "TRUE":
+        return None
+
     proxy_url = os.getenv("OPENAI_PROXY")
 
     if not proxy_url:
+        logger.warning("PROXY_USE is TRUE but OPENAI_PROXY is not set")
         return None
 
     # Handle proxy authentication if provided
@@ -99,13 +106,21 @@ def create_httpx_client(timeout: float = 60.0) -> httpx.Client:
 
 def log_proxy_status():
     """Log the current proxy configuration status for debugging purposes."""
+    proxy_use = os.getenv("PROXY_USE", "FALSE").upper()
     proxy_url = os.getenv("OPENAI_PROXY")
     no_proxy = get_no_proxy_hosts()
+
+    if proxy_use != "TRUE":
+        logger.info("✓ Proxy disabled (PROXY_USE=FALSE or not set)")
+        if proxy_url:
+            logger.info(f"  ℹ️  OPENAI_PROXY is set to: {proxy_url.split('@')[-1]} but not used")
+        return
 
     if proxy_url:
         # Mask credentials in log
         safe_url = proxy_url.split("@")[-1] if "@" in proxy_url else proxy_url
-        logger.info(f"✓ OpenAI API proxy configured: {safe_url}")
+        logger.info(f"✓ OpenAI API proxy enabled (PROXY_USE=TRUE)")
+        logger.info(f"✓ Proxy URL: {safe_url}")
 
         if os.getenv("OPENAI_PROXY_USERNAME"):
             logger.info("✓ Proxy authentication enabled")
@@ -113,4 +128,4 @@ def log_proxy_status():
         if no_proxy:
             logger.info(f"✓ NO_PROXY hosts: {no_proxy}")
     else:
-        logger.info("✓ No proxy configured (direct connection)")
+        logger.warning("⚠️  PROXY_USE=TRUE but OPENAI_PROXY is not set!")

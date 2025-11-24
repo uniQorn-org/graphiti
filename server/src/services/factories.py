@@ -2,7 +2,7 @@
 
 from config.schema import DatabaseConfig, EmbedderConfig, LLMConfig
 from openai import AsyncAzureOpenAI
-from utils.proxy_utils import create_async_httpx_client, log_proxy_status
+from utils.proxy_utils import get_proxy_config, log_proxy_status
 
 # Try to import FalkorDriver if available
 try:
@@ -138,24 +138,30 @@ class LLMClientFactory:
                     max_tokens=config.max_tokens,
                 )
 
-                # Create httpx client with proxy configuration
-                http_client = create_async_httpx_client()
+                # Set proxy environment variables for OpenAI SDK
+                # OpenAI SDK automatically uses HTTP_PROXY/HTTPS_PROXY env vars
+                import os
+                proxy_config = get_proxy_config()
+                if proxy_config:
+                    # Set HTTP_PROXY and HTTPS_PROXY for OpenAI SDK
+                    proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
+                    os.environ["HTTP_PROXY"] = proxy_url
+                    os.environ["HTTPS_PROXY"] = proxy_url
+                    logger.debug(f"Set HTTP_PROXY/HTTPS_PROXY for OpenAI SDK")
 
                 # Only pass reasoning/verbosity parameters for reasoning models (gpt-5 family)
                 if is_reasoning_model:
                     return OpenAIClient(
                         config=llm_config,
                         reasoning="minimal",
-                        verbosity="low",
-                        http_client=http_client
+                        verbosity="low"
                     )
                 else:
                     # For non-reasoning models, explicitly pass None to disable these parameters
                     return OpenAIClient(
                         config=llm_config,
                         reasoning=None,
-                        verbosity=None,
-                        http_client=http_client
+                        verbosity=None
                     )
 
             case "azure_openai":
@@ -298,10 +304,10 @@ class EmbedderFactory:
                     embedding_model=config.model,
                 )
 
-                # Create httpx client with proxy configuration
-                http_client = create_async_httpx_client()
+                # Proxy is already set via HTTP_PROXY/HTTPS_PROXY env vars in LLMClientFactory
+                # No need to set again here
 
-                return OpenAIEmbedder(config=embedder_config, http_client=http_client)
+                return OpenAIEmbedder(config=embedder_config)
 
             case "azure_openai":
                 if not HAS_AZURE_EMBEDDER:

@@ -45,6 +45,12 @@ services:
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       GRAPHITI_TELEMETRY_ENABLED: ${GRAPHITI_TELEMETRY_ENABLED:-false}
       PYTHONUNBUFFERED: "1"
+      # Proxy configuration
+      PROXY_USE: ${PROXY_USE:-FALSE}
+      OPENAI_PROXY: ${OPENAI_PROXY:-}
+      OPENAI_PROXY_USERNAME: ${OPENAI_PROXY_USERNAME:-}
+      OPENAI_PROXY_PASSWORD: ${OPENAI_PROXY_PASSWORD:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1}
     depends_on:
       neo4j:
         condition: service_healthy
@@ -72,6 +78,12 @@ services:
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       BACKEND_PORT: "20001"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:20002,http://localhost:3000,http://localhost:5173}
+      # Proxy configuration
+      PROXY_USE: ${PROXY_USE:-FALSE}
+      OPENAI_PROXY: ${OPENAI_PROXY:-}
+      OPENAI_PROXY_USERNAME: ${OPENAI_PROXY_USERNAME:-}
+      OPENAI_PROXY_PASSWORD: ${OPENAI_PROXY_PASSWORD:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1}
     depends_on:
       neo4j:
         condition: service_healthy
