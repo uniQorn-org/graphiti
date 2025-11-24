@@ -3,6 +3,7 @@
  */
 import React, { useState } from 'react';
 import { EntityEdge } from '../services/api';
+import { useToast } from './ToastContainer';
 
 interface FactEditorProps {
   edge: EntityEdge;
@@ -13,10 +14,11 @@ interface FactEditorProps {
 const FactEditor: React.FC<FactEditorProps> = ({ edge, onSave, onCancel }) => {
   const [newFact, setNewFact] = useState(edge.fact);
   const [reason, setReason] = useState('');
+  const { showToast } = useToast();
 
   const handleSave = () => {
     if (!newFact.trim()) {
-      alert('Factを入力してください');
+      showToast('Factを入力してください', 'error');
       return;
     }
     onSave(edge.uuid, newFact, reason || undefined);

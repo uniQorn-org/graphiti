@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { SearchResult, EntityEdge, factsAPI } from '../services/api';
 import FactEditor from './FactEditor';
+import { useToast } from './ToastContainer';
 
 interface SearchResultsProps {
   results: SearchResult;
@@ -12,6 +13,7 @@ interface SearchResultsProps {
 const SearchResults: React.FC<SearchResultsProps> = ({ results }) => {
   const [editingEdge, setEditingEdge] = useState<EntityEdge | null>(null);
   const [localEdges, setLocalEdges] = useState<EntityEdge[]>(results.edges);
+  const { showToast } = useToast();
 
   // resultsが変わったらlocalEdgesを更新
   useEffect(() => {
@@ -24,21 +26,28 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results }) => {
 
   const handleSaveFact = async (edgeUuid: string, newFact: string, reason?: string) => {
     try {
-      const response = await factsAPI.updateFact(edgeUuid, { new_fact: newFact, reason });
+      const response = await factsAPI.updateFact(edgeUuid, {
+        fact: newFact,
+        attributes: reason ? { update_reason: reason } : undefined
+      });
 
-      if (response.success && response.updated_edge) {
-        // ローカル状態を更新
-        setLocalEdges((prev) =>
-          prev.map((e) => (e.uuid === edgeUuid ? response.updated_edge! : e))
-        );
+      if (response.status === 'updated') {
+        // ローカル状態を更新: 古いfactを削除し、新しいfactを追加
+        setLocalEdges((prev) => {
+          const updatedEdges = prev.filter((e) => e.uuid !== edgeUuid);
+          // 注: 新しいedgeの詳細情報がないため、リストから削除するのみ
+          // 実際には新しいedgeを追加するには再検索が必要
+          return updatedEdges;
+        });
         setEditingEdge(null);
-        alert('Factを更新しました！');
+        showToast(`Factを更新しました！\n旧UUID: ${response.old_uuid}\n新UUID: ${response.new_uuid}`, 'success');
       } else {
-        alert(`更新に失敗しました: ${response.message}`);
+        showToast(`更新に失敗しました: ${response.message}`, 'error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Fact更新エラー:', error);
-      alert('エラーが発生しました');
+      const errorMsg = error.response?.data?.message || error.message || 'エラーが発生しました';
+      showToast(`更新に失敗しました: ${errorMsg}`, 'error');
     }
   };
 

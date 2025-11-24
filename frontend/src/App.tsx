@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import ChatInterface from './components/ChatInterface';
 import ManualSearch from './components/ManualSearch';
+import { ToastProvider } from './components/ToastContainer';
 
 type Tab = 'chat' | 'search';
 
@@ -11,7 +12,8 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
 
   return (
-    <div style={styles.app}>
+    <ToastProvider>
+      <div style={styles.app}>
       <header style={styles.header}>
         <h1 style={styles.headerTitle}>Graphiti 社内検索Bot</h1>
         <div style={styles.tabs}>
@@ -44,6 +46,7 @@ const App: React.FC = () => {
         <p>Powered by Graphiti + LangChain + React</p>
       </footer>
     </div>
+    </ToastProvider>
   );
 };
 

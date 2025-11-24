@@ -985,7 +985,7 @@ async def create_episode_endpoint(request):
     return await create_episode_api(request, graphiti_service, queue_service, config)
 
 
-@mcp.custom_route("/graph/search", methods=["POST"])
+@mcp.custom_route("/graph/search", methods=["POST", "OPTIONS"])
 async def graph_search_endpoint(request):
     """
     Search the graph for nodes, facts, or episodes.
@@ -1000,6 +1000,12 @@ async def graph_search_endpoint(request):
         "center_node_uuid": "optional-uuid"
     }
     """
+    if request.method == "OPTIONS":
+        response = JSONResponse({"status": "ok"}, status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
     return await search_graph_api(request, graphiti_service, config)
 
 
@@ -1013,7 +1019,7 @@ async def delete_episode_endpoint(request):
     return await delete_episode_api(request, graphiti_service)
 
 
-@mcp.custom_route("/graph/facts/{uuid}", methods=["PATCH"])
+@mcp.custom_route("/graph/facts/{uuid}", methods=["PATCH", "OPTIONS"])
 async def update_fact_endpoint(request):
     """
     Update a fact by creating a new version and expiring the old one.
@@ -1026,6 +1032,12 @@ async def update_fact_endpoint(request):
         "attributes": {"key": "value"}
     }
     """
+    if request.method == "OPTIONS":
+        response = JSONResponse({"status": "ok"}, status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
     return await update_fact_api(request, graphiti_service)
 
 

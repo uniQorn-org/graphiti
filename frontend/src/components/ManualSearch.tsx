@@ -4,22 +4,30 @@
 import React, { useState } from 'react';
 import { searchAPI, SearchResult } from '../services/api';
 import SearchResults from './SearchResults';
+import { useToast } from './ToastContainer';
 
 const ManualSearch: React.FC = () => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const { showToast } = useToast();
 
   const handleSearch = async () => {
     if (!query.trim() || isLoading) return;
 
     setIsLoading(true);
     try {
-      const results = await searchAPI.search({ query, limit: 20 });
-      setSearchResults(results);
+      const response = await searchAPI.search({ query, limit: 20 });
+      // Convert backend response to SearchResult format
+      const searchResult: SearchResult = {
+        nodes: [],
+        edges: response.results || [],
+        total_count: response.count || 0
+      };
+      setSearchResults(searchResult);
     } catch (error) {
       console.error('検索エラー:', error);
-      alert('検索中にエラーが発生しました');
+      showToast('検索中にエラーが発生しました', 'error');
     } finally {
       setIsLoading(false);
     }

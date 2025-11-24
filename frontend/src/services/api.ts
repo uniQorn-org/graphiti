@@ -3,14 +3,30 @@
  */
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:20001/api';
+// Graphiti MCP Server (graph operations: search, facts, episodes)
+const GRAPHITI_API_BASE_URL = import.meta.env.VITE_GRAPHITI_API_URL || 'http://localhost:30547';
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
+// Search Bot Backend (chat with LLM)
+const CHAT_API_BASE_URL = import.meta.env.VITE_CHAT_API_URL || 'http://localhost:20001/api';
+
+// API client for graph operations (search, facts, episodes)
+const graphitiApi = axios.create({
+  baseURL: GRAPHITI_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// API client for chat functionality
+const chatApi = axios.create({
+  baseURL: CHAT_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Backward compatibility
+const api = graphitiApi;
 
 // 型定義
 export interface ChatMessage {
@@ -68,15 +84,17 @@ export interface ManualSearchRequest {
 }
 
 export interface UpdateFactRequest {
-  edge_uuid: string;
-  new_fact: string;
-  reason?: string;
+  fact: string;
+  source_node_uuid?: string;
+  target_node_uuid?: string;
+  attributes?: Record<string, any>;
 }
 
 export interface UpdateFactResponse {
-  success: boolean;
+  status: string;
+  old_uuid: string;
+  new_uuid: string;
   message: string;
-  updated_edge?: EntityEdge;
 }
 
 export interface AddEpisodeRequest {
@@ -95,24 +113,33 @@ export interface AddEpisodeResponse {
 // API関数
 export const chatAPI = {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
-    const response = await api.post<ChatResponse>('/chat', request);
+    const response = await chatApi.post<ChatResponse>('/chat', request);
     return response.data;
   },
 };
 
+// Backend search response type
+interface GraphSearchResponse {
+  message: string;
+  search_type: string;
+  results: EntityEdge[];
+  count: number;
+}
+
 export const searchAPI = {
-  async search(request: ManualSearchRequest): Promise<SearchResult> {
-    const response = await api.post<SearchResult>('/search', request);
+  async search(request: ManualSearchRequest): Promise<GraphSearchResponse> {
+    const response = await api.post<GraphSearchResponse>('/graph/search', {
+      query: request.query,
+      search_type: 'facts',
+      max_results: request.limit || 20
+    });
     return response.data;
   },
 };
 
 export const factsAPI = {
-  async updateFact(edgeUuid: string, request: Omit<UpdateFactRequest, 'edge_uuid'>): Promise<UpdateFactResponse> {
-    const response = await api.put<UpdateFactResponse>(`/facts/${edgeUuid}`, {
-      edge_uuid: edgeUuid,
-      ...request,
-    });
+  async updateFact(edgeUuid: string, request: UpdateFactRequest): Promise<UpdateFactResponse> {
+    const response = await api.patch<UpdateFactResponse>(`/graph/facts/${edgeUuid}`, request);
     return response.data;
   },
 };
