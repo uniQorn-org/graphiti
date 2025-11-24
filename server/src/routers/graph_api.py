@@ -489,7 +489,7 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
 
         new_edge = EntityEdge(
             uuid=new_uuid,
-            name=update_request.fact,
+            name=old_edge.name,  # Preserve relationship type from old edge
             fact=update_request.fact,
             fact_embedding=embedding_vector,
             episodes=old_edge.episodes,  # Inherit episodes from old edge to preserve citations
