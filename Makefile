@@ -117,25 +117,35 @@ health: ## Check health status of all services
 
 ##@ Data Ingestion
 
-ingest-github: ## Ingest GitHub issues (requires GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO)
-	@if [ -z "$(GITHUB_TOKEN)" ]; then \
+ingest-github: ## Ingest GitHub issues (requires GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO in .env or as arguments)
+	@# Load from .env if file exists
+	@if [ -f .env ]; then \
+		export $$(grep -v '^#' .env | xargs); \
+	fi; \
+	if [ -z "$(GITHUB_TOKEN)" ] && [ -z "$$GITHUB_TOKEN" ]; then \
 		echo "$(RED)Error: GITHUB_TOKEN is not set$(NC)"; \
+		echo "Set it in .env file or pass as argument:"; \
 		echo "Usage: make ingest-github GITHUB_TOKEN=ghp_xxx GITHUB_OWNER=owner GITHUB_REPO=repo"; \
 		exit 1; \
-	fi
-	@if [ -z "$(GITHUB_OWNER)" ]; then \
+	fi; \
+	if [ -z "$(GITHUB_OWNER)" ] && [ -z "$$GITHUB_OWNER" ]; then \
 		echo "$(RED)Error: GITHUB_OWNER is not set$(NC)"; \
+		echo "Set it in .env file or pass as argument:"; \
 		echo "Usage: make ingest-github GITHUB_TOKEN=ghp_xxx GITHUB_OWNER=owner GITHUB_REPO=repo"; \
 		exit 1; \
-	fi
-	@if [ -z "$(GITHUB_REPO)" ]; then \
+	fi; \
+	if [ -z "$(GITHUB_REPO)" ] && [ -z "$$GITHUB_REPO" ]; then \
 		echo "$(RED)Error: GITHUB_REPO is not set$(NC)"; \
+		echo "Set it in .env file or pass as argument:"; \
 		echo "Usage: make ingest-github GITHUB_TOKEN=ghp_xxx GITHUB_OWNER=owner GITHUB_REPO=repo"; \
 		exit 1; \
-	fi
-	@echo "$(BLUE)Ingesting GitHub issues from $(GITHUB_OWNER)/$(GITHUB_REPO)...$(NC)"
-	docker-compose exec -e GITHUB_TOKEN=$(GITHUB_TOKEN) -e GITHUB_OWNER=$(GITHUB_OWNER) -e GITHUB_REPO=$(GITHUB_REPO) graphiti-mcp python src/scripts/ingest_github.py
-	@echo "$(GREEN)✓ GitHub issues ingested$(NC)"
+	fi; \
+	TOKEN=$${GITHUB_TOKEN:-$(GITHUB_TOKEN)}; \
+	OWNER=$${GITHUB_OWNER:-$(GITHUB_OWNER)}; \
+	REPO=$${GITHUB_REPO:-$(GITHUB_REPO)}; \
+	echo "$(BLUE)Ingesting GitHub issues from $$OWNER/$$REPO...$(NC)"; \
+	docker-compose exec -e GITHUB_TOKEN=$$TOKEN -e GITHUB_OWNER=$$OWNER -e GITHUB_REPO=$$REPO graphiti-mcp python src/scripts/ingest_github.py; \
+	echo "$(GREEN)✓ GitHub issues ingested$(NC)"
 
 ingest-slack: ## Ingest Slack messages (requires SLACK_TOKEN, WORKSPACE_ID, CHANNEL_ID)
 	@if [ -z "$(SLACK_TOKEN)" ]; then \

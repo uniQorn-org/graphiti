@@ -17,8 +17,11 @@ When running Graphiti behind a corporate firewall, you may need to configure a p
 Add the following environment variables to your `.env` file:
 
 ```bash
+# Required: Enable/disable proxy (set to TRUE in production, FALSE for local development)
+PROXY_USE=FALSE
+
 # Required: Proxy server URL
-OPENAI_PROXY=http://proxy.company.com:8080
+OPENAI_PROXY=https://openai-proxy.company.com
 
 # Optional: Proxy authentication (if required)
 OPENAI_PROXY_USERNAME=your_username
@@ -28,30 +31,36 @@ OPENAI_PROXY_PASSWORD=your_password
 NO_PROXY=localhost,127.0.0.1,neo4j,minio,graphiti-mcp
 ```
 
+**Important**:
+- Set `PROXY_USE=TRUE` to enable proxy in production environment
+- Set `PROXY_USE=FALSE` (or leave unset) for local development without proxy
+- The proxy will only be used when `PROXY_USE=TRUE`
+
 ### Configuration Examples
 
-#### Basic Proxy (No Authentication)
+#### Production Environment with Proxy (No Authentication)
 
 ```bash
-OPENAI_PROXY=http://proxy.company.com:8080
-NO_PROXY=localhost,127.0.0.1
+PROXY_USE=TRUE
+OPENAI_PROXY=https://openai-proxy.company.com
+NO_PROXY=localhost,127.0.0.1,neo4j,minio,graphiti-mcp
 ```
 
-#### Proxy with Authentication
+#### Production Environment with Proxy Authentication
 
 ```bash
+PROXY_USE=TRUE
 OPENAI_PROXY=http://proxy.company.com:8080
 OPENAI_PROXY_USERNAME=john.doe
 OPENAI_PROXY_PASSWORD=your_secure_password
 NO_PROXY=localhost,127.0.0.1,neo4j,minio
 ```
 
-#### HTTPS Proxy
+#### Local Development (No Proxy)
 
 ```bash
-OPENAI_PROXY=https://secure-proxy.company.com:8443
-OPENAI_PROXY_USERNAME=john.doe
-OPENAI_PROXY_PASSWORD=your_secure_password
+PROXY_USE=FALSE
+# OPENAI_PROXY settings are ignored when PROXY_USE=FALSE
 ```
 
 ## Testing Locally
@@ -71,12 +80,15 @@ docker-compose -f docker-compose.test-proxy.yml up -d
 
 ### Configure Environment
 
+Update your `.env` file:
+
 ```bash
-# Set proxy configuration
-export OPENAI_PROXY=http://localhost:8080
+# Enable proxy for testing
+PROXY_USE=TRUE
+OPENAI_PROXY=http://localhost:8080
 
 # Restart your services
-docker-compose restart
+make restart
 ```
 
 ### Inspect Traffic
@@ -95,18 +107,19 @@ docker-compose -f docker-compose.test-proxy.yml down
 
 ### Check Logs
 
-When services start, you should see proxy configuration in the logs:
+When services start with `PROXY_USE=TRUE`, you should see proxy configuration in the logs:
 
 ```
-✓ OpenAI API proxy configured: proxy.company.com:8080
-✓ Proxy authentication enabled
+✓ OpenAI API proxy enabled (PROXY_USE=TRUE)
+✓ Proxy URL: openai-proxy.company.com
+✓ Proxy authentication enabled (if credentials provided)
 ✓ NO_PROXY hosts: localhost,127.0.0.1,neo4j,minio
 ```
 
-If no proxy is configured:
+If proxy is disabled with `PROXY_USE=FALSE`:
 
 ```
-✓ No proxy configured (direct connection)
+✓ Proxy disabled (PROXY_USE=FALSE or not set)
 ```
 
 ### Test with Translator
@@ -276,11 +289,41 @@ stringData:
   OPENAI_PROXY_PASSWORD: "password"
 ```
 
+## Data Ingestion Configuration
+
+### GitHub Token Setup
+
+For GitHub data ingestion, you can either:
+
+**Option 1: Add to .env file (Recommended)**
+
+```bash
+# Add to .env file
+GITHUB_TOKEN=ghp_your_token_here
+GITHUB_OWNER=your_org_or_username
+GITHUB_REPO=your_repo_name
+```
+
+Then run:
+```bash
+make ingest-github
+```
+
+**Option 2: Pass as command-line arguments**
+
+```bash
+make ingest-github GITHUB_TOKEN=ghp_xxx GITHUB_OWNER=owner GITHUB_REPO=repo
+```
+
+The Makefile will automatically load values from `.env` if they're not provided as arguments.
+
 ## Related Files
 
 - [.env.example](../.env.example) - Environment variable template
-- [server/src/utils/proxy_utils.py](../server/src/utils/proxy_utils.py) - Proxy utility implementation
+- [server/src/utils/proxy_utils.py](../server/src/utils/proxy_utils.py) - Proxy utility implementation (Graphiti MCP)
+- [backend/src/utils/proxy_utils.py](../backend/src/utils/proxy_utils.py) - Proxy utility implementation (Search Bot Backend)
 - [docker-compose.test-proxy.yml](../docker-compose.test-proxy.yml) - Test proxy server configuration
+- [Makefile](../Makefile) - Build and deployment commands
 
 ## Support
 
@@ -289,4 +332,5 @@ If you encounter issues:
 1. Check logs for proxy configuration messages
 2. Verify proxy is accessible with `curl`
 3. Test with local proxy server first
-4. Consult your IT department for corporate proxy details
+4. Ensure `PROXY_USE=TRUE` is set when using proxy
+5. Consult your IT department for corporate proxy details
