@@ -304,8 +304,16 @@ class EmbedderFactory:
                     embedding_model=config.model,
                 )
 
-                # Proxy is already set via HTTP_PROXY/HTTPS_PROXY env vars in LLMClientFactory
-                # No need to set again here
+                # Ensure proxy environment variables are set for OpenAI Embedder
+                # (They should already be set by LLMClientFactory, but set them again
+                # to ensure Embedder initialization has access to them)
+                import os
+                proxy_config = get_proxy_config()
+                if proxy_config:
+                    proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
+                    os.environ["HTTP_PROXY"] = proxy_url
+                    os.environ["HTTPS_PROXY"] = proxy_url
+                    logger.debug(f"Ensured HTTP_PROXY/HTTPS_PROXY for OpenAI Embedder")
 
                 return OpenAIEmbedder(config=embedder_config)
 

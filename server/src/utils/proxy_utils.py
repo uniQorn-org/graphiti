@@ -96,8 +96,10 @@ def create_httpx_client(timeout: float = 60.0) -> httpx.Client:
     }
 
     if proxy_config:
-        client_kwargs["proxies"] = proxy_config
-        logger.debug(f"Creating httpx client with proxy: {list(proxy_config.values())[0].split('@')[-1]}")
+        # Use the proxy URL (httpx 0.27.0+ uses 'proxy' parameter, not 'proxies')
+        proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
+        client_kwargs["proxy"] = proxy_url
+        logger.debug(f"Creating httpx client with proxy: {proxy_url.split('@')[-1]}")
     else:
         logger.debug("Creating httpx client without proxy")
 
@@ -128,8 +130,10 @@ def create_async_httpx_client(timeout: float = 60.0) -> httpx.AsyncClient:
     }
 
     if proxy_config:
-        client_kwargs["proxies"] = proxy_config
-        logger.debug(f"Creating async httpx client with proxy: {list(proxy_config.values())[0].split('@')[-1]}")
+        # Use the proxy URL (httpx 0.27.0+ uses 'proxy' parameter, not 'proxies')
+        proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
+        client_kwargs["proxy"] = proxy_url
+        logger.debug(f"Creating async httpx client with proxy: {proxy_url.split('@')[-1]}")
     else:
         logger.debug("Creating async httpx client without proxy")
 
