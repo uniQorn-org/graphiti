@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from ..models.schemas import ChatMessage, ChatResponse, SearchResult
 from .graphiti_service import GraphitiService
-from ..utils.proxy_utils import create_httpx_client, log_proxy_status
+from ..utils.proxy_utils import get_proxy_config, log_proxy_status
 
 logger = logging.getLogger(__name__)
 
@@ -33,15 +33,25 @@ class LangChainService:
         # Log proxy configuration status
         log_proxy_status()
 
-        # Create httpx client with proxy configuration
-        http_client = create_httpx_client()
+        # Set proxy environment variables if PROXY_USE is enabled
+        # LangChain's ChatOpenAI will automatically use HTTP_PROXY/HTTPS_PROXY env vars
+        import os
+        proxy_config = get_proxy_config()
+        if proxy_config:
+            proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
+            os.environ["HTTP_PROXY"] = proxy_url
+            os.environ["HTTPS_PROXY"] = proxy_url
+            logger.info(f"Set HTTP_PROXY/HTTPS_PROXY for ChatOpenAI: {proxy_url.split('@')[-1]}")
 
+        # ChatOpenAI will automatically use:
+        # 1. HTTP_PROXY/HTTPS_PROXY environment variables (set above)
+        # 2. NO_PROXY environment variable (from .env)
+        # No need to pass http_client parameter
         self.llm = ChatOpenAI(
             api_key=openai_api_key,
             model=model,
             temperature=0.7,
-            streaming=False,
-            http_client=http_client
+            streaming=False
         )
 
         # プロンプトテンプレート

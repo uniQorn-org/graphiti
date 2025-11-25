@@ -76,7 +76,7 @@ docker compose ps
 | サービス | URL | 認証情報 |
 |---------|-----|---------|
 | **フロントエンドUI** | http://localhost:20002 | なし |
-| **Neo4j Browser** | http://localhost:7474 | user: `neo4j`, pass: `password123` |
+| **Neo4j Browser** | http://localhost:20474 | user: `neo4j`, pass: `password123` |
 | **バックエンドAPI** | http://localhost:20001/docs | なし |
 | **Graphiti MCP** | http://localhost:30547 | なし |
 | **MinIO Console** | http://localhost:20735 | user: `minio`, pass: `miniosecret` |

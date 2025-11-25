@@ -47,7 +47,7 @@ start: setup ## Start all Docker services
 	@echo "$(GREEN)✓ Services started$(NC)"
 	@echo ""
 	@echo "$(BLUE)Access URLs:$(NC)"
-	@echo "  Neo4j Browser:    http://localhost:7474"
+	@echo "  Neo4j Browser:    http://localhost:20474"
 	@echo "  Graphiti MCP:     http://localhost:30547"
 	@echo "  Backend API:      http://localhost:20001/docs"
 	@echo "  Frontend UI:      http://localhost:20002"
