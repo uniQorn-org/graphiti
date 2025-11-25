@@ -65,13 +65,25 @@ Content-Type: application/json
 
 ## 環境変数
 
-- `NEO4J_URI`: Neo4j接続URI (デフォルト: bolt://neo4j:7687)
-- `NEO4J_USER`: Neo4jユーザー名 (デフォルト: neo4j)
-- `NEO4J_PASSWORD`: Neo4jパスワード (デフォルト: password123)
+### 必須設定
+
+- `NEO4J_URI`: Neo4j接続URI (Docker内: `bolt://neo4j:7687`, ホスト: `bolt://localhost:20687`)
+- `NEO4J_USER`: Neo4jユーザー名 (デフォルト: `neo4j`)
+- `NEO4J_PASSWORD`: Neo4jパスワード (デフォルト: `password123`)
 - `OPENAI_API_KEY`: OpenAI APIキー (必須)
-- `OPENAI_MODEL`: 使用するモデル (デフォルト: gpt-4o-mini)
-- `BACKEND_PORT`: サーバーポート (デフォルト: 20001)
+- `OPENAI_MODEL`: 使用するモデル (デフォルト: `gpt-4o-mini`)
+- `BACKEND_PORT`: サーバーポート (デフォルト: `20001`)
 - `CORS_ORIGINS`: CORS許可オリジン
+
+### プロキシ設定（オプション）
+
+社内プロキシを使用する場合：
+
+- `PROXY_USE`: プロキシの有効化 (`TRUE` / `FALSE`)
+- `OPENAI_PROXY`: プロキシURL (例: `https://openai-proxy.company.com`)
+- `NO_PROXY`: プロキシを経由しないホスト (例: `localhost,127.0.0.1,neo4j`)
+
+詳細は [PROXY_SETUP.md](../docs/PROXY_SETUP.md) を参照してください。
 
 ## ローカル開発
 

@@ -70,7 +70,7 @@ make start
 起動が完了すると、以下のURLでアクセスできます：
 
 - **フロントエンドUI**: http://localhost:20002
-- **Neo4j Browser**: http://localhost:7474 (user: `neo4j`, password: `password123`)
+- **Neo4j Browser**: http://localhost:20474 (user: `neo4j`, password: `password123`)
 - **バックエンドAPI**: http://localhost:20001/docs
 - **Graphiti MCP**: http://localhost:30547
 - **MinIO Console**: http://localhost:20735 (user: `minio`, password: `miniosecret`)
@@ -238,8 +238,8 @@ curl -X POST http://localhost:30547/graph/search \
 |--------|-------------|------|
 | `NEO4J_USER` | `neo4j` | Neo4jユーザー名 |
 | `NEO4J_PASSWORD` | `password123` | Neo4jパスワード |
-| `NEO4J_HTTP_PORT` | `7474` | Neo4j HTTPポート |
-| `NEO4J_BOLT_PORT` | `7687` | Neo4j Boltポート |
+| `NEO4J_HTTP_PORT` | `20474` | Neo4j HTTPポート（ホスト側） |
+| `NEO4J_BOLT_PORT` | `20687` | Neo4j Boltポート（ホスト側） |
 | `NEO4J_HEAP_INITIAL_SIZE` | `512M` | Neo4jヒープ初期サイズ |
 | `NEO4J_HEAP_MAX_SIZE` | `1G` | Neo4jヒープ最大サイズ |
 | `NEO4J_PAGECACHE_SIZE` | `512M` | Neo4jページキャッシュサイズ |

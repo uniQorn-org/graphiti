@@ -46,7 +46,7 @@
 from graphiti_core import Graphiti
 from graphiti_core.nodes import EpisodeType
 
-graphiti = Graphiti("bolt://localhost:7687", "neo4j", "password")
+graphiti = Graphiti("bolt://localhost:20687", "neo4j", "password")
 
 # 初回のみ：Neo4j側にインデックス/制約を作成
 await graphiti.build_indices_and_constraints()

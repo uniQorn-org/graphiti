@@ -162,9 +162,26 @@ make clean-data    # すべてのデータを削除（警告: データが失わ
 make clean-cache   # Pythonキャッシュをクリア
 ```
 
+## 🌐 企業プロキシ設定
+
+社内ネットワークでプロキシを使用している場合、`.env` ファイルで設定できます：
+
+```bash
+# プロキシを有効化（本番環境）
+PROXY_USE=TRUE
+OPENAI_PROXY=https://openai-proxy.company.com
+NO_PROXY=localhost,127.0.0.1,neo4j,minio,graphiti-mcp
+
+# ローカル開発環境（プロキシなし）
+PROXY_USE=FALSE
+```
+
+詳細は **[PROXY_SETUP.md](docs/PROXY_SETUP.md)** を参照してください。
+
 ## 📚 詳細なドキュメント
 
 - **[SETUP.md](SETUP.md)** - 詳細なセットアップガイド、トラブルシューティング
+- **[PROXY_SETUP.md](docs/PROXY_SETUP.md)** - 企業プロキシの設定方法
 - **[Graphiti解説 (日本語)](docs/graphiti.md)** - Graphitiの仕組みと使い方
 - **[REST API仕様](server/docs/REST_API.md)** - API仕様とエンドポイント
 - **[Graphiti公式ドキュメント](https://help.getzep.com/graphiti/)** - Graphiti本体のドキュメント
@@ -200,7 +217,7 @@ from client.graphiti_client import GraphitiClient
 async def main():
     # クライアント作成
     client = GraphitiClient(
-        uri="bolt://localhost:7687",
+        uri="bolt://localhost:20687",
         user="neo4j",
         password="password123"
     )
