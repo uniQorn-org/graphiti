@@ -23,4 +23,4 @@ RUN uv pip install --system \
 
 EXPOSE 8001
 
-CMD ["python", "src/graphiti_mcp_server.py", "--transport", "http", "--database-provider", "neo4j", "--port", "8001", "--host", "0.0.0.0"]
+CMD ["python", "src/graphiti_mcp_server.py", "--database-provider", "neo4j", "--port", "8001", "--host", "0.0.0.0"]

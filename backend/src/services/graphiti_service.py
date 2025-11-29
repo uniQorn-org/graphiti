@@ -1,13 +1,14 @@
 """
-Graphitiサービス - ナレッジグラフ管理
+Graphiti service - Knowledge graph management
 """
 import logging
 import sys
 from pathlib import Path
-from typing import List, Optional
 from datetime import datetime
+
 from graphiti_core import Graphiti
 from graphiti_core.nodes import EpisodeType
+
 from ..models.schemas import (
     EntityNode,
     EntityEdge,
@@ -17,67 +18,56 @@ from ..models.schemas import (
     CitationInfo,
 )
 
-# Import citation service from MCP server
-# Add the server/src directory to the path to import citation_service
+# Import shared utilities from MCP server
+# Add the server/src directory to the path
 server_src_path = Path(__file__).parent.parent.parent.parent / "server" / "src"
 if str(server_src_path) not in sys.path:
     sys.path.insert(0, str(server_src_path))
 
-try:
-    from services.citation_service import get_episode_citations
-except ImportError:
-    # Fallback if import fails
-    async def get_episode_citations(driver, entity_uuid, entity_type="edge"):
-        return []
+# Import shared datetime utilities
+from shared.utils.datetime_utils import convert_neo4j_datetime
+from services.citation_service import get_episode_citations
 
 logger = logging.getLogger(__name__)
 
 
 class GraphitiService:
-    """Graphitiクライアントのラッパー"""
+    """Wrapper for Graphiti client"""
 
     def __init__(self, uri: str, user: str, password: str):
         """
-        初期化
+        Initialize Graphiti service
 
         Args:
             uri: Neo4j URI
-            user: Neo4j ユーザー名
-            password: Neo4j パスワード
+            user: Neo4j username
+            password: Neo4j password
         """
         self.client = Graphiti(uri=uri, user=user, password=password)
-        logger.info(f"Graphitiサービスを初期化しました: {uri}")
+        logger.info(f"Graphiti service initialized: {uri}")
 
     async def search(self, query: str, limit: int = 10) -> SearchResult:
         """
-        ナレッジグラフを検索
+        Search the knowledge graph
 
         Args:
-            query: 検索クエリ
-            limit: 結果の最大数
+            query: Search query
+            limit: Maximum number of results
 
         Returns:
-            検索結果
+            Search results
         """
         try:
-            # Graphitiで検索 (limitパラメータは使用しない)
+            # Search with Graphiti (limit parameter not used)
             results = await self.client.search(query)
 
-            # 結果を変換
+            # Convert results
             nodes = []
             edges = []
             edge_uuids = []
 
-            # Neo4jのDateTimeをPythonのdatetimeに変換
-            def convert_neo4j_datetime(dt):
-                if dt is None:
-                    return None
-                if hasattr(dt, 'to_native'):
-                    return dt.to_native()
-                return dt
-
             if isinstance(results, list):
-                # エッジのリスト
+                # List of edges
                 for edge in results:
                     edge_uuids.append(edge.uuid)
                     edges.append(
@@ -95,7 +85,7 @@ class GraphitiService:
                         )
                     )
             else:
-                # SearchResultsオブジェクト
+                # SearchResults object
                 if hasattr(results, "edges"):
                     for edge in results.edges:
                         edge_uuids.append(edge.uuid)
@@ -126,7 +116,7 @@ class GraphitiService:
                             )
                         )
 
-            # カスタムフィールド（updated_at, original_fact, update_reason）とcitationsをNeo4jから取得
+            # Fetch custom fields (updated_at, original_fact, update_reason) and citations from Neo4j
             if edge_uuids:
                 query = """
                 UNWIND $uuids AS uuid
@@ -139,7 +129,7 @@ class GraphitiService:
                     result = await session.run(query, uuids=edge_uuids)
                     records = [record async for record in result]
 
-                    # UUIDでマッピング
+                    # Map by UUID
                     custom_fields = {
                         record["uuid"]: {
                             "updated_at": convert_neo4j_datetime(record.get("updated_at")),
@@ -149,7 +139,7 @@ class GraphitiService:
                         for record in records
                     }
 
-                    # 各エッジのcitationsを取得
+                    # Fetch citations for each edge
                     citations_map = {}
                     for edge_uuid in edge_uuids:
                         try:
@@ -164,12 +154,12 @@ class GraphitiService:
                             logger.error(f"Error fetching citations for edge {edge_uuid}: {e}")
                             citations_map[edge_uuid] = []
 
-                    # エッジにカスタムフィールドとcitationsを追加
+                    # Add custom fields and citations to edges
                     for i, edge in enumerate(edges):
                         fields = custom_fields.get(edge.uuid, {})
                         edge_citations = citations_map.get(edge.uuid, [])
 
-                        # model_dump()からカスタムフィールドを除外して再構築
+                        # Rebuild excluding custom fields from model_dump()
                         edge_dict = edge.model_dump(exclude={'updated_at', 'original_fact', 'update_reason', 'citations'})
                         edges[i] = EntityEdge(
                             **edge_dict,
@@ -184,26 +174,26 @@ class GraphitiService:
             )
 
         except Exception as e:
-            logger.error(f"検索エラー: {e}")
+            logger.error(f"Search error: {e}")
             raise
 
     async def update_fact(
-        self, edge_uuid: str, new_fact: str, reason: Optional[str] = None
+        self, edge_uuid: str, new_fact: str, reason: str | None = None
     ) -> UpdateFactResponse:
         """
-        Factを更新
+        Update a fact
 
         Args:
-            edge_uuid: 更新するエッジのUUID
-            new_fact: 新しいfact
-            reason: 更新理由
+            edge_uuid: UUID of the edge to update
+            new_fact: New fact text
+            reason: Update reason
 
         Returns:
-            更新結果
+            Update result
         """
         try:
-            # Neo4jに直接クエリを実行してfactを更新
-            # original_factは初回修正時のみ保存（COALESCEで既存値を優先）
+            # Execute Neo4j query to update fact
+            # original_fact is saved only on first update (COALESCE prioritizes existing value)
             query = """
             MATCH ()-[e:RELATES_TO]->()
             WHERE e.uuid = $edge_uuid
@@ -227,15 +217,7 @@ class GraphitiService:
                 record = records[0]
                 edge_data = dict(record["e"])
 
-                # Neo4jのDateTimeをPythonのdatetimeに変換
-                def convert_neo4j_datetime(dt):
-                    if dt is None:
-                        return None
-                    # Neo4j DateTimeオブジェクトはto_native()メソッドで変換可能
-                    if hasattr(dt, 'to_native'):
-                        return dt.to_native()
-                    return dt
-
+                # Convert Neo4j DateTime to Python datetime (using shared utility)
                 updated_edge = EntityEdge(
                     uuid=edge_data.get("uuid"),
                     source_node_uuid=edge_data.get("source_node_uuid", ""),
@@ -247,7 +229,7 @@ class GraphitiService:
                     invalid_at=convert_neo4j_datetime(edge_data.get("invalid_at")),
                     expired_at=convert_neo4j_datetime(edge_data.get("expired_at")),
                     episodes=edge_data.get("episodes", []),
-                    # 修正履歴フィールド
+                    # Fact update history fields
                     updated_at=convert_neo4j_datetime(edge_data.get("updated_at")),
                     original_fact=edge_data.get("original_fact"),
                     update_reason=edge_data.get("update_reason"),
@@ -255,44 +237,44 @@ class GraphitiService:
 
                 return UpdateFactResponse(
                     success=True,
-                    message="Factを更新しました",
+                    message="Fact updated successfully",
                     updated_edge=updated_edge,
                 )
             else:
                 return UpdateFactResponse(
-                    success=False, message="エッジが見つかりませんでした"
+                    success=False, message="Edge not found"
                 )
 
         except Exception as e:
-            logger.error(f"Fact更新エラー: {e}")
-            return UpdateFactResponse(success=False, message=f"エラー: {str(e)}")
+            logger.error(f"Fact update error: {e}")
+            return UpdateFactResponse(success=False, message=f"Error: {str(e)}")
 
     async def add_episode(
         self,
         name: str,
         content: str,
         source: str = "user_input",
-        source_description: Optional[str] = None,
+        source_description: str | None = None,
     ) -> AddEpisodeResponse:
         """
-        新しいエピソードを追加
+        Add a new episode
 
         Args:
-            name: エピソード名
-            content: エピソード内容
-            source: ソース（episode_type_strとして使用）
-            source_description: ソースの説明
+            name: Episode name
+            content: Episode content
+            source: Source (used as episode_type_str)
+            source_description: Source description
 
         Returns:
-            追加結果
+            Addition result
         """
         try:
-            # sourceをEpisodeTypeに変換
-            episode_type = EpisodeType.text  # デフォルト
+            # Convert source to EpisodeType
+            episode_type = EpisodeType.text  # Default
             if source.lower() in ['message', 'text', 'json']:
                 episode_type = EpisodeType(source.lower())
 
-            # Graphitiにエピソードを追加
+            # Add episode to Graphiti
             await self.client.add_episode(
                 name=name,
                 episode_body=content,
@@ -302,13 +284,13 @@ class GraphitiService:
             )
 
             return AddEpisodeResponse(
-                success=True, message="エピソードを追加しました", episode_uuid=name
+                success=True, message="Episode added successfully", episode_uuid=name
             )
 
         except Exception as e:
-            logger.error(f"エピソード追加エラー: {e}")
-            return AddEpisodeResponse(success=False, message=f"エラー: {str(e)}")
+            logger.error(f"Episode addition error: {e}")
+            return AddEpisodeResponse(success=False, message=f"Error: {str(e)}")
 
     async def close(self):
-        """クライアントを閉じる"""
+        """Close the client"""
         await self.client.close()

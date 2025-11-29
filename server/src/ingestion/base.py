@@ -8,6 +8,8 @@ from typing import Any
 
 from tqdm import tqdm
 
+from shared.constants import DEFAULT_MCP_URL
+from shared.exceptions import IngestionError
 from .mcp_client import MCPClient
 
 
@@ -16,7 +18,7 @@ class BaseIngester(ABC):
 
     def __init__(
         self,
-        mcp_url: str = "http://localhost:8001/mcp/",
+        mcp_url: str | None = None,
         translate: bool = True,
         save_to_disk: bool = True,
         data_dir: Path | None = None,
@@ -25,16 +27,16 @@ class BaseIngester(ABC):
         Initialize base ingester.
 
         Args:
-            mcp_url: URL of the MCP server
+            mcp_url: URL of the MCP server (defaults to DEFAULT_MCP_URL from constants)
             translate: Whether to translate content to English
             save_to_disk: Whether to save raw data to disk
             data_dir: Directory to save data (default: /app/data/{source_type})
         """
-        self.mcp_url = mcp_url
+        self.mcp_url = mcp_url or DEFAULT_MCP_URL
         self.translate = translate
         self.save_to_disk = save_to_disk
         self.data_dir = data_dir
-        self.mcp_client = MCPClient(mcp_url)
+        self.mcp_client = MCPClient(self.mcp_url)
 
         # Import translator if needed
         if translate:
@@ -81,13 +83,13 @@ class BaseIngester(ABC):
         """
         pass
 
-    def translate_text(self, text: str, max_chars: int = 10000) -> str:
+    def translate_text(self, text: str, max_chars: int | None = None) -> str:
         """
         Translate text if translation is enabled.
 
         Args:
             text: Text to translate
-            max_chars: Maximum characters to translate
+            max_chars: Maximum characters to translate (defaults to MAX_CHARS_DEFAULT from constants)
 
         Returns:
             Translated text if translation enabled, original text otherwise

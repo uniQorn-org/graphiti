@@ -6,58 +6,94 @@ from typing import Any
 import boto3
 
 from .base import BaseIngester
+from .config import ZoomIngestionConfig
 from .utils import build_minio_url
 
 
 class ZoomIngester(BaseIngester):
     """Ingester for Zoom VTT transcripts."""
 
-    def __init__(
-        self,
-        data_dir: str | Path,
-        minio_endpoint: str = "localhost:20734",
-        minio_public_endpoint: str | None = None,
-        minio_access_key: str = "minio",
-        minio_secret_key: str = "miniosecret",
-        bucket_name: str = "zoom-transcripts",
-        **kwargs,
-    ):
+    def __init__(self, config: ZoomIngestionConfig, **kwargs):
         """
         Initialize Zoom ingester.
 
         Args:
-            data_dir: Directory containing VTT files
-            minio_endpoint: MinIO endpoint
-            minio_public_endpoint: MinIO public endpoint (for browser access)
-            minio_access_key: MinIO access key
-            minio_secret_key: MinIO secret key
-            bucket_name: MinIO bucket name
+            config: Zoom ingestion configuration
             **kwargs: Additional arguments for BaseIngester
         """
         super().__init__(**kwargs)
-        self.vtt_dir = Path(data_dir)
-        self.minio_endpoint = minio_endpoint
-        self.minio_public_endpoint = minio_public_endpoint or minio_endpoint
-        self.bucket_name = bucket_name
+        self.vtt_dir = Path(config.data_dir)
+        self.minio_endpoint = config.minio_endpoint
+        self.minio_public_endpoint = (
+            config.minio_public_endpoint or config.minio_endpoint
+        )
+        self.bucket_name = config.bucket_name
 
         # Initialize MinIO client
         self.minio_client = boto3.client(
             "s3",
-            endpoint_url=f"http://{minio_endpoint}",
-            aws_access_key_id=minio_access_key,
-            aws_secret_access_key=minio_secret_key,
+            endpoint_url=f"http://{config.minio_endpoint}",
+            aws_access_key_id=config.minio_access_key,
+            aws_secret_access_key=config.minio_secret_key,
         )
 
         # Create bucket if not exists
         try:
-            self.minio_client.head_bucket(Bucket=bucket_name)
-        except:
-            self.minio_client.create_bucket(Bucket=bucket_name)
-            print(f"Created MinIO bucket: {bucket_name}")
+            self.minio_client.head_bucket(Bucket=self.bucket_name)
+        except Exception:
+            # Bucket doesn't exist or other error - try to create it
+            self.minio_client.create_bucket(Bucket=self.bucket_name)
+            print(f"Created MinIO bucket: {self.bucket_name}")
 
     def get_source_type(self) -> str:
         """Get source type identifier."""
         return "zoom"
+
+    def _should_skip_line(self, line: str) -> bool:
+        """Check if line should be skipped (WEBVTT header or empty)."""
+        return line.startswith("WEBVTT") or not line
+
+    def _is_timestamp_line(self, line: str) -> bool:
+        """Check if line is a timestamp (format: timestamp --> timestamp)."""
+        return "-->" in line
+
+    def _process_vtt_line(
+        self, line: str, current_message: dict, messages: list[dict]
+    ) -> dict:
+        """
+        Process a single VTT line and update current message.
+
+        Args:
+            line: Line to process
+            current_message: Current message being built
+            messages: List of completed messages
+
+        Returns:
+            Updated current message
+        """
+        # Skip header and empty lines
+        if self._should_skip_line(line):
+            return current_message
+
+        # New timestamp starts a new message
+        if self._is_timestamp_line(line):
+            if current_message.get("text"):
+                messages.append(current_message)
+            return {"timestamp": line}
+
+        # Speaker name follows timestamp
+        if current_message.get("timestamp") and not current_message.get("speaker"):
+            current_message["speaker"] = line
+            return current_message
+
+        # Message text follows speaker
+        if current_message.get("speaker"):
+            if "text" not in current_message:
+                current_message["text"] = line
+            else:
+                current_message["text"] += " " + line
+
+        return current_message
 
     def _parse_vtt(self, vtt_content: str) -> list[dict]:
         """
@@ -74,27 +110,11 @@ class ZoomIngester(BaseIngester):
         current_message = {}
 
         for line in lines:
-            line = line.strip()
+            current_message = self._process_vtt_line(
+                line.strip(), current_message, messages
+            )
 
-            # Skip WEBVTT header and empty lines
-            if line.startswith("WEBVTT") or not line:
-                continue
-
-            # Detect speaker line (format: timestamp --> timestamp\nSpeaker Name)
-            if "-->" in line:
-                if current_message.get("text"):
-                    messages.append(current_message)
-                current_message = {"timestamp": line}
-            elif current_message.get("timestamp") and not current_message.get("speaker"):
-                # This is the speaker name
-                current_message["speaker"] = line
-            elif current_message.get("speaker"):
-                # This is the message text
-                if "text" not in current_message:
-                    current_message["text"] = line
-                else:
-                    current_message["text"] += " " + line
-
+        # Add final message if exists
         if current_message.get("text"):
             messages.append(current_message)
 

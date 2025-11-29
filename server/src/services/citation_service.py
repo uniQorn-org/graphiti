@@ -2,8 +2,8 @@
 
 import logging
 import re
-from typing import Any
 
+from neo4j import AsyncDriver
 from graphiti_core.edges import EntityEdge
 from graphiti_core.nodes import EntityNode, EpisodicNode
 from models.citation_types import CitationChainEntry, CitationInfo
@@ -31,7 +31,7 @@ def extract_source_url(source_description: str) -> str | None:
 
 
 async def get_episode_citations(
-    driver: Any, entity_uuid: str, entity_type: str = "edge"
+    driver: AsyncDriver, entity_uuid: str, entity_type: str = "edge"
 ) -> list[CitationInfo]:
     """Get citations (source episodes) for an entity (edge or node).
 
@@ -116,7 +116,7 @@ async def get_episode_citations(
 
 
 async def get_citation_chain(
-    driver: Any, entity_uuid: str, entity_type: str = "edge", max_depth: int = 10
+    driver: AsyncDriver, entity_uuid: str, entity_type: str = "edge", max_depth: int = 10
 ) -> list[CitationChainEntry]:
     """Get the full citation chain for an entity, tracking creation and updates.
 

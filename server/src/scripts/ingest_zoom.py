@@ -13,6 +13,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from ingestion.config import ZoomIngestionConfig
 from ingestion.zoom import ZoomIngester
 
 
@@ -74,16 +75,21 @@ async def main():
     )
     args = parser.parse_args()
 
-    # Create ingester
-    ingester = ZoomIngester(
+    # Create configuration
+    zoom_config = ZoomIngestionConfig(
         data_dir=args.data_dir,
         minio_endpoint=args.minio_endpoint,
         minio_public_endpoint=args.minio_public_endpoint,
         minio_access_key=args.minio_access_key,
         minio_secret_key=args.minio_secret_key,
         bucket_name=args.bucket_name,
+        translate_to_english=not args.no_translate,
+    )
+
+    # Create ingester
+    ingester = ZoomIngester(
+        config=zoom_config,
         mcp_url=args.mcp_url,
-        translate=not args.no_translate,
         save_to_disk=False,  # VTT files are already on disk
     )
 

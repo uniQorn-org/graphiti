@@ -38,37 +38,19 @@
 
 - Docker 20.10以降
 - Docker Compose v2.0以降
-- OpenAI API Key（または企業プロキシAPIキー）
+- OpenAI API Key
 - make
-- cc-throttle（レート制限対策、必須） - [セットアップガイド](docs/CC_THROTTLE_SETUP.md)
 
 ## クイックスタート
-
-### 事前準備（重要）
-
-Graphitiは並列で多数のOpenAI APIリクエストを送信するため、cc-throttle（レート制限プロキシ）の起動が必須です。
-
-```bash
-# 1. cc-throttleをクローン・起動（別ターミナル）
-git clone https://ghe.corp.yahoo.co.jp/ytonoyam/cc-throttle-openai
-cd cc-throttle
-cp .env.example .env
-# .envを編集してAPIキーを設定
-bun install
-bun run index.ts
-
-# ポート8080でcc-throttleが起動します
-# 詳細は docs/CC_THROTTLE_SETUP.md を参照
-```
 
 ### セットアップと起動
 
 ```bash
-# 2. Graphitiリポジトリのクローン
+# 1. Graphitiリポジトリのクローン
 git clone git@ghe.corp.yahoo.co.jp:ytonoyam/graphiti-simple-chat.git
 cd graphiti
 
-# 3. .envファイルを編集してAPIキーを設定
+# 2. .envファイルを編集してAPIキーを設定
 cp .env.example .env
 nano .env  # または vim .env、code .env など
 # 必須項目:
@@ -76,20 +58,16 @@ nano .env  # または vim .env、code .env など
 #   - OPENAI_API_KEY（バックエンド用、同じキー）
 #   - GITHUB_TOKEN（GitHub連携する場合）
 
-# 4. ワンコマンドでセットアップと起動
+# 3. ワンコマンドでセットアップと起動
 make quick-start
 
-# 5. デモデータをLLMでナレッジグラフに変換
+# 4. デモデータをLLMでナレッジグラフに変換
 make demo
 ```
 
 ### 推奨LLMモデル
 
 gpt-4o-mini以上あれば十分です。gpt-5は時間がかなりかかるのでタイパよくありません。
-gpt-oss 20bは性能低すぎてまともに使えません。
-
-> [!WARNING]
-> [LOCAL_LLM_SETUP.md](docs/LOCAL_LLM_SETUP.md)のローカルLLM（gpt-oss 20b）は動作確認用です。精度が低く実用には不向きです。
 
 ### アクセスURL
 
@@ -187,13 +165,26 @@ make clean-cache   # Pythonキャッシュをクリア
 
 ## 📚 詳細なドキュメント
 
+### アーキテクチャとデータモデル
+
+- **[METADATA_SPECIFICATION.md](docs/METADATA_SPECIFICATION.md)** - メタデータ仕様の完全ガイド（Episode/Node/Edge/Citation）
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - システムアーキテクチャの詳細（3層分離構造、通信フロー）
+- **[DATA_INGESTION.md](docs/DATA_INGESTION.md)** - データ取り込みガイド（GitHub/Slack/Zoom、カスタムデータソース）
+
+### セットアップとトラブルシューティング
+
 - **[SETUP.md](SETUP.md)** - 詳細なセットアップガイド、トラブルシューティング
-- **[PROXY_SETUP.md](docs/PROXY_SETUP.md)** - 企業プロキシの設定方法
-- **[CC_THROTTLE_SETUP.md](docs/CC_THROTTLE_SETUP.md)** - cc-throttle レート制限プロキシの設定方法（429エラー対策）
-- **[LOCAL_LLM_SETUP.md](docs/LOCAL_LLM_SETUP.md)** - LM Studioを使用したローカルLLM設定（レート制限回避）
-- **[Graphiti解説 (日本語)](docs/graphiti.md)** - Graphitiの仕組みと使い方
-- **[REST API仕様](server/docs/REST_API.md)** - API仕様とエンドポイント
-- **[Graphiti公式ドキュメント](https://help.getzep.com/graphiti/)** - Graphiti本体のドキュメント
+
+### API仕様とGraphiti公式リソース
+
+- **[REST API仕様](docs/REST_API.md)** - 自作Graphiti MCPのAPI仕様とエンドポイント
+
+#### Graphiti公式リソース
+- **[Graphiti公式ドキュメント](https://help.getzep.com/graphiti/)** - Graphitiの公式ドキュメント
+- **[GitHub Repository](https://github.com/getzep/graphiti)** - Graphiti Coreのソースコード（Apache 2.0）
+- **[Quick Start Guide](https://help.getzep.com/graphiti/getting-started/quick-start)** - 公式クイックスタート
+- **[Custom Entity Types](https://help.getzep.com/graphiti/core-concepts/custom-entity-and-edge-types)** - カスタムエンティティタイプの作成方法
+- **[Searching the Graph](https://help.getzep.com/graphiti/working-with-data/searching)** - グラフ検索のガイド
 
 ## 使用方法
 
@@ -217,42 +208,7 @@ Claude DesktopやCursorの設定ファイルに以下を追加:
 - `search_facts`: ナレッジグラフを検索
 - `get_entity`: エンティティの詳細を取得
 
-### 2. Pythonクライアントとして使用
-
-```python
-import asyncio
-from client.graphiti_client import GraphitiClient
-
-async def main():
-    # クライアント作成
-    client = GraphitiClient(
-        uri="bolt://localhost:20687",
-        user="neo4j",
-        password="password123"
-    )
-
-    # インデックス/制約の構築（初回のみ）
-    await client.ensure_ready()
-
-    # エピソード追加
-    await client.add_episode(
-        name="meeting_2024_01_15",
-        episode_body="2024年1月15日の会議で、新機能の実装計画を議論しました。",
-        source="user_input",
-        source_description="定例会議の議事録"
-    )
-
-    # 検索
-    results = await client.search("新機能の実装計画")
-    print(results)
-
-    # クライアントを閉じる
-    await client.close()
-
-asyncio.run(main())
-```
-
-### 3. REST API経由で使用
+### 2. REST API経由で使用
 
 ```bash
 # 検索
@@ -283,7 +239,6 @@ graphiti/
 ├── .env.example          # 環境変数テンプレート
 ├── SETUP.md              # 詳細セットアップガイド
 ├── README.md             # このファイル
-├── client/               # Pythonクライアント
 ├── server/               # MCPサーバー
 │   ├── src/             # サーバーソースコード
 │   │   ├── ingestion/           # データ取り込みモジュール
@@ -445,6 +400,8 @@ docker compose logs -f
 docker compose logs -f graphiti-mcp
 docker compose logs -f neo4j
 ```
+
+詳細は[docs/](docs/)ディレクトリの技術ドキュメントを参照してください。
 
 ## コントリビューション
 

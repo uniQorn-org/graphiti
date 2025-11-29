@@ -19,45 +19,65 @@ class YamlSettingsSource(PydanticBaseSettingsSource):
         super().__init__(settings_cls)
         self.config_path = config_path or Path("config.yaml")
 
+    def _convert_string_to_type(self, result: str) -> bool | None | str:
+        """Convert string to appropriate type (bool, None, or keep as string)."""
+        lower_result = result.lower().strip()
+
+        if lower_result in ("true", "1", "yes", "on"):
+            return True
+
+        if lower_result in ("false", "0", "no", "off"):
+            return False
+
+        if lower_result == "":
+            # Empty string means env var not set - return None for optional fields
+            return None
+
+        return result
+
+    def _expand_string_value(self, value: str) -> Any:
+        """Expand environment variables in a string value."""
+        import re
+
+        def replacer(match):
+            var_name = match.group(1)
+            default_value = match.group(3) if match.group(3) is not None else ""
+            return os.environ.get(var_name, default_value)
+
+        pattern = r"\$\{([^:}]+)(:([^}]*))?\}"
+
+        # Check if the entire value is a single env var expression
+        full_match = re.fullmatch(pattern, value)
+        if full_match:
+            result = replacer(full_match)
+            # Convert boolean-like strings to actual booleans
+            if isinstance(result, str):
+                return self._convert_string_to_type(result)
+            return result
+
+        # Otherwise, do string substitution (keep as strings for partial replacements)
+        return re.sub(pattern, replacer, value)
+
     def _expand_env_vars(self, value: Any) -> Any:
         """Recursively expand environment variables in configuration values."""
-        if isinstance(value, str):
-            # Support ${VAR} and ${VAR:default} syntax
-            import re
-
-            def replacer(match):
-                var_name = match.group(1)
-                default_value = match.group(3) if match.group(3) is not None else ""
-                return os.environ.get(var_name, default_value)
-
-            pattern = r"\$\{([^:}]+)(:([^}]*))?\}"
-
-            # Check if the entire value is a single env var expression
-            full_match = re.fullmatch(pattern, value)
-            if full_match:
-                result = replacer(full_match)
-                # Convert boolean-like strings to actual booleans
-                if isinstance(result, str):
-                    lower_result = result.lower().strip()
-                    if lower_result in ("true", "1", "yes", "on"):
-                        return True
-                    elif lower_result in ("false", "0", "no", "off"):
-                        return False
-                    elif lower_result == "":
-                        # Empty string means env var not set - return None for optional fields
-                        return None
-                return result
-            else:
-                # Otherwise, do string substitution (keep as strings for partial replacements)
-                return re.sub(pattern, replacer, value)
-        elif isinstance(value, dict):
+        # Handle simple types first (guard clauses)
+        if isinstance(value, dict):
             return {k: self._expand_env_vars(v) for k, v in value.items()}
-        elif isinstance(value, list):
+
+        if isinstance(value, list):
             return [self._expand_env_vars(item) for item in value]
+
+        if isinstance(value, str):
+            return self._expand_string_value(value)
+
         return value
 
     def get_field_value(self, field_name: str, field_info: Any) -> Any:
-        """Get field value from YAML config."""
+        """Get field value from YAML config.
+
+        This method is required by PydanticBaseSettingsSource abstract class.
+        We use __call__ instead for loading configuration, so this returns None.
+        """
         return None
 
     def __call__(self) -> dict[str, Any]:
@@ -77,7 +97,7 @@ class ServerConfig(BaseModel):
 
     transport: str = Field(
         default="http",
-        description="Transport type: http (default, recommended), stdio, or sse (deprecated)",
+        description="Transport type: http (only supported option for Docker environment)",
     )
     host: str = Field(default="0.0.0.0", description="Server host")
     port: int = Field(default=8000, description="Server port")
@@ -271,10 +291,6 @@ class GraphitiConfig(BaseSettings):
 
     def apply_cli_overrides(self, args) -> None:
         """Apply CLI argument overrides to configuration."""
-        # Override server settings
-        if hasattr(args, "transport") and args.transport:
-            self.server.transport = args.transport
-
         # Override LLM settings
         if hasattr(args, "llm_provider") and args.llm_provider:
             self.llm.provider = args.llm_provider

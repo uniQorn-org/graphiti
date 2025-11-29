@@ -1,52 +1,53 @@
 """
-LangChainサービス - RAG & チャット
+LangChain service - RAG & Chat
 """
 import logging
-from typing import List
+import os
+
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
+
+# Use shared proxy configuration
+import sys
+from pathlib import Path
+server_src_path = Path(__file__).parent.parent.parent.parent / "server" / "src"
+if str(server_src_path) not in sys.path:
+    sys.path.insert(0, str(server_src_path))
+
+from shared.utils.proxy_config import setup_proxy_environment, log_proxy_status
+from shared.constants import DEFAULT_LLM_TEMPERATURE
+
 from ..models.schemas import ChatMessage, ChatResponse, SearchResult
 from .graphiti_service import GraphitiService
-from ..utils.proxy_utils import get_proxy_config, log_proxy_status
 
 logger = logging.getLogger(__name__)
 
 
 class LangChainService:
-    """LangChainを使ったRAGチャットサービス"""
+    """RAG chat service using LangChain"""
 
     def __init__(
         self, graphiti_service: GraphitiService, openai_api_key: str, model: str
     ):
         """
-        初期化
+        Initialize LangChain service.
 
         Args:
-            graphiti_service: Graphitiサービス
-            openai_api_key: OpenAI APIキー
-            model: 使用するモデル名
+            graphiti_service: Graphiti service instance
+            openai_api_key: OpenAI API key
+            model: Model name to use
         """
         self.graphiti = graphiti_service
 
-        # Log proxy configuration status
+        # Log and setup proxy configuration
         log_proxy_status()
-
-        # Set proxy environment variables if PROXY_USE is enabled
-        # LangChain's ChatOpenAI will automatically use HTTP_PROXY/HTTPS_PROXY env vars
-        import os
-        proxy_config = get_proxy_config()
-        if proxy_config:
-            proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
-            os.environ["HTTP_PROXY"] = proxy_url
-            os.environ["HTTPS_PROXY"] = proxy_url
-            logger.info(f"Set HTTP_PROXY/HTTPS_PROXY for ChatOpenAI: {proxy_url.split('@')[-1]}")
+        setup_proxy_environment()
 
         # ChatOpenAI will automatically use:
-        # 1. HTTP_PROXY/HTTPS_PROXY environment variables (set above)
+        # 1. HTTP_PROXY/HTTPS_PROXY environment variables (set by setup_proxy_environment)
         # 2. NO_PROXY environment variable (from .env)
-        # No need to pass http_client parameter
 
         # Check if custom base_url is set (for cc-throttle or corporate proxy)
         base_url = os.getenv("OPENAI_BASE_URL")
@@ -56,37 +57,37 @@ class LangChainService:
                 api_key=openai_api_key,
                 base_url=base_url,
                 model=model,
-                temperature=0.7,
+                temperature=DEFAULT_LLM_TEMPERATURE,
                 streaming=False
             )
         else:
             self.llm = ChatOpenAI(
                 api_key=openai_api_key,
                 model=model,
-                temperature=0.7,
+                temperature=DEFAULT_LLM_TEMPERATURE,
                 streaming=False
             )
 
-        # プロンプトテンプレート
+        # Prompt template
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 (
                     "system",
-                    """あなたは社内の知識ベースを使って質問に答えるアシスタントです。
+                    """You are an assistant that answers questions using the company's knowledge base.
 
-以下のナレッジグラフから取得した情報を使って、ユーザーの質問に答えてください。
+Please answer the user's question using the information retrieved from the knowledge graph below.
 
-## 検索結果
+## Search Results
 
 {search_results}
 
-## 指示
+## Instructions
 
-1. 上記の「関連する事実」に記載されている情報を必ず活用して回答してください
-2. 検索結果に「関連する情報が見つかりませんでした。」と表示されている場合のみ、「情報が見つかりませんでした」と答えてください
-3. それ以外の場合は、検索結果の事実を使って具体的に答えてください
-4. 回答は日本語で、わかりやすく説明してください
-5. 検索結果の事実を引用する際は、内容をそのまま使用してください""",
+1. You must use the information listed in the "Related Facts" above to formulate your answer
+2. Only respond with "No information found" if the search results display "No relevant information found."
+3. Otherwise, answer specifically using the facts from the search results
+4. Provide your answer in Japanese, explaining clearly and understandably
+5. When quoting facts from the search results, use the content as-is""",
                 ),
                 MessagesPlaceholder(variable_name="history"),
                 ("human", "{question}"),
@@ -94,50 +95,50 @@ class LangChainService:
         )
 
         self.chain = self.prompt | self.llm | StrOutputParser()
-        logger.info("LangChainサービスを初期化しました")
+        logger.info("LangChain service initialized successfully")
 
     def _format_search_results(self, search_results: SearchResult) -> str:
         """
-        検索結果をテキスト形式に変換
+        Format search results as text.
 
         Args:
-            search_results: 検索結果
+            search_results: Search results from Graphiti
 
         Returns:
-            フォーマットされたテキスト
+            Formatted text string
         """
         if search_results.total_count == 0:
-            return "関連する情報が見つかりませんでした。"
+            return "No relevant information found."
 
         text_parts = []
 
-        # エッジ（関係性）を表示
+        # Display edges (relationships)
         if search_results.edges:
-            text_parts.append("### 関連する事実:")
+            text_parts.append("### Related Facts:")
             for i, edge in enumerate(search_results.edges[:10], 1):
                 text_parts.append(f"{i}. {edge.fact}")
                 if edge.valid_at:
-                    text_parts.append(f"   - 有効期間: {edge.valid_at}")
+                    text_parts.append(f"   - Valid from: {edge.valid_at}")
 
-        # ノード（エンティティ）を表示
+        # Display nodes (entities)
         if search_results.nodes:
-            text_parts.append("\n### 関連するエンティティ:")
+            text_parts.append("\n### Related Entities:")
             for i, node in enumerate(search_results.nodes[:5], 1):
                 text_parts.append(f"{i}. {node.name}")
                 if node.summary:
-                    text_parts.append(f"   - 概要: {node.summary}")
+                    text_parts.append(f"   - Summary: {node.summary}")
 
         return "\n".join(text_parts)
 
-    def _convert_chat_history(self, history: List[ChatMessage]) -> List:
+    def _convert_chat_history(self, history: list[ChatMessage]) -> list:
         """
-        チャット履歴をLangChain形式に変換
+        Convert chat history to LangChain format
 
         Args:
-            history: チャット履歴
+            history: Chat history
 
         Returns:
-            LangChain形式のメッセージリスト
+            Message list in LangChain format
         """
         messages = []
         for msg in history:
@@ -150,33 +151,33 @@ class LangChainService:
     async def chat(
         self,
         message: str,
-        history: List[ChatMessage],
+        history: list[ChatMessage],
         include_search_results: bool = True,
     ) -> ChatResponse:
         """
-        チャット処理
+        Chat processing
 
         Args:
-            message: ユーザーメッセージ
-            history: チャット履歴
-            include_search_results: 検索結果を含めるか
+            message: User message
+            history: Chat history
+            include_search_results: Whether to include search results
 
         Returns:
-            チャット応答
+            Chat response
         """
         try:
-            # Graphitiで検索
+            # Search with Graphiti
             search_results = await self.graphiti.search(message, limit=10)
 
-            # 検索結果をフォーマット
+            # Format search results
             formatted_results = self._format_search_results(search_results)
-            logger.info(f"検索結果フォーマット: {formatted_results}")
-            logger.info(f"検索結果件数: edges={len(search_results.edges)}, nodes={len(search_results.nodes)}")
+            logger.info(f"Formatted search results: {formatted_results}")
+            logger.info(f"Search result counts: edges={len(search_results.edges)}, nodes={len(search_results.nodes)}")
 
-            # チャット履歴を変換
+            # Convert chat history
             langchain_history = self._convert_chat_history(history)
 
-            # LLMに問い合わせ
+            # Query LLM
             response = await self.chain.ainvoke(
                 {
                     "question": message,
@@ -185,7 +186,7 @@ class LangChainService:
                 }
             )
 
-            # ソースを抽出
+            # Extract sources
             sources = []
             for edge in search_results.edges[:5]:
                 sources.append(f"{edge.name}: {edge.fact[:100]}...")
@@ -197,7 +198,7 @@ class LangChainService:
             )
 
         except Exception as e:
-            logger.error(f"チャットエラー: {e}")
+            logger.error(f"Chat error: {e}")
             return ChatResponse(
-                answer=f"エラーが発生しました: {str(e)}", search_results=None, sources=[]
+                answer=f"An error occurred: {str(e)}", search_results=None, sources=[]
             )

@@ -1,16 +1,15 @@
 """
-設定とDI
+Configuration and Dependency Injection
 """
 import os
 from functools import lru_cache
-from typing import Optional
 from pydantic_settings import BaseSettings
 from .services import LangChainService
 from .services.mcp_client_service import MCPClientService
 
 
 class Settings(BaseSettings):
-    """環境変数設定"""
+    """Environment variable settings"""
 
     # Graphiti MCP Server
     graphiti_mcp_url: str = os.getenv("GRAPHITI_MCP_URL", "http://graphiti-mcp:8001")
@@ -29,27 +28,27 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """設定取得"""
+    """Get settings instance"""
     return Settings()
 
 
-# グローバルサービスインスタンス
-_mcp_client_service: Optional[MCPClientService] = None
-_langchain_service: Optional[LangChainService] = None
+# Global service instances
+_mcp_client_service: MCPClientService | None = None
+_langchain_service: LangChainService | None = None
 
 
 async def init_services():
-    """サービス初期化"""
+    """Initialize services"""
     global _mcp_client_service, _langchain_service
 
     settings = get_settings()
 
-    # MCPクライアントサービス初期化
+    # Initialize MCP client service
     _mcp_client_service = MCPClientService(
         mcp_url=settings.graphiti_mcp_url,
     )
 
-    # LangChainサービス初期化
+    # Initialize LangChain service
     _langchain_service = LangChainService(
         graphiti_service=_mcp_client_service,
         openai_api_key=settings.openai_api_key,
@@ -58,7 +57,7 @@ async def init_services():
 
 
 async def shutdown_services():
-    """サービスシャットダウン"""
+    """Shutdown services"""
     global _mcp_client_service, _langchain_service
 
     if _mcp_client_service:
@@ -66,14 +65,14 @@ async def shutdown_services():
 
 
 def get_graphiti_service() -> MCPClientService:
-    """Graphitiサービス取得（DI用）"""
+    """Get Graphiti service instance (for DI)"""
     if _mcp_client_service is None:
-        raise RuntimeError("MCPクライアントサービスが初期化されていません")
+        raise RuntimeError("MCP client service has not been initialized")
     return _mcp_client_service
 
 
 def get_langchain_service() -> LangChainService:
-    """LangChainサービス取得（DI用）"""
+    """Get LangChain service instance (for DI)"""
     if _langchain_service is None:
-        raise RuntimeError("LangChainサービスが初期化されていません")
+        raise RuntimeError("LangChain service has not been initialized")
     return _langchain_service

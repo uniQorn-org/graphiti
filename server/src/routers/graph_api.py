@@ -12,20 +12,15 @@ from models.api_types import (APIErrorResponse, EpisodeCreateRequest,
                               EpisodeCreateResponse, FactDeleteResponse,
                               FactUpdateRequest, FactUpdateResponse,
                               GraphSearchRequest, GraphSearchResponse)
+from models.episode_types import EpisodeProcessingConfig
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from utils.formatting import format_fact_result
+from utils.graphiti_operations import (normalize_episode_type,
+                                        resolve_group_ids,
+                                        create_node_search_filters)
 
 logger = logging.getLogger(__name__)
-
-
-def create_cors_response(content: Dict[str, Any], status_code: int = 200) -> JSONResponse:
-    """Create a JSONResponse with CORS headers."""
-    response = JSONResponse(content, status_code=status_code)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
 
 
 # ============================================================================
@@ -59,18 +54,10 @@ async def create_episode_api(
         effective_group_id = episode_request.group_id or config.graphiti.group_id
 
         # Convert source string to EpisodeType enum
-        episode_type = EpisodeType.text  # Default
-        if episode_request.source:
-            try:
-                episode_type = EpisodeType[episode_request.source.lower()]
-            except (KeyError, AttributeError):
-                logger.warning(
-                    f"Unknown source type '{episode_request.source}', using 'text' as default"
-                )
-                episode_type = EpisodeType.text
+        episode_type = normalize_episode_type(episode_request.source)
 
-        # Submit to queue service for async processing
-        await queue_service.add_episode(
+        # Create episode processing config
+        episode_config = EpisodeProcessingConfig(
             group_id=effective_group_id,
             name=episode_request.name,
             content=episode_request.content,
@@ -78,8 +65,11 @@ async def create_episode_api(
             source_url=episode_request.source_url,
             episode_type=episode_type,
             entity_types=graphiti_service.entity_types,
-            uuid=episode_request.uuid or None,
+            uuid=episode_request.uuid,
         )
+
+        # Submit to queue service for async processing
+        await queue_service.add_episode(episode_config)
 
         response = EpisodeCreateResponse(
             status="success",
@@ -125,14 +115,8 @@ async def search_graph_api(request: Request, graphiti_service, config) -> JSONRe
 
         client = await graphiti_service.get_client()
 
-        # Use provided group_ids or fall back to default
-        effective_group_ids = (
-            search_request.group_ids
-            if search_request.group_ids is not None
-            else [config.graphiti.group_id]
-            if config.graphiti.group_id
-            else []
-        )
+        # Resolve group IDs using shared utility
+        effective_group_ids = resolve_group_ids(search_request.group_ids, config)
 
         results = []
 
@@ -152,10 +136,8 @@ async def search_graph_api(request: Request, graphiti_service, config) -> JSONRe
             ])
 
         elif search_request.search_type == "nodes":
-            # Search for nodes (EntityNodes)
-            search_filters = SearchFilters(
-                node_labels=search_request.entity_types,
-            )
+            # Create search filters using shared utility
+            search_filters = create_node_search_filters(search_request.entity_types)
 
             search_results = await client.search_(
                 query=search_request.query,
@@ -230,7 +212,7 @@ async def search_graph_api(request: Request, graphiti_service, config) -> JSONRe
             count=len(results),
         )
 
-        return create_cors_response(response.model_dump())
+        return JSONResponse(response.model_dump())
 
     except Exception as e:
         logger.error(f"Error searching graph: {e}")
@@ -319,63 +301,23 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
         )
 
     try:
+        # Parse request
         old_uuid = request.path_params["uuid"]
         logger.info(f"📋 Request parameters:")
         logger.info(f"   - UUID: {old_uuid}")
 
         body = await request.json()
-        logger.info(f"   - Request body keys: {list(body.keys())}")
-
         update_request = FactUpdateRequest(**body)
         logger.info(f"   - New fact text: {update_request.fact[:100]}...")
         logger.info(f"   - New fact length: {len(update_request.fact)}")
 
+        # Get Graphiti client
         logger.info(f"🔌 Getting Graphiti client...")
         client = await graphiti_service.get_client()
         logger.info(f"   ✅ Graphiti client obtained")
-        logger.info(f"   - client.embedder: {client.embedder}")
-        logger.info(f"   - client.embedder type: {type(client.embedder)}")
 
-        # Get the old fact
-        logger.info(f"📥 Fetching old edge by UUID: {old_uuid}")
-        old_edge = await EntityEdge.get_by_uuid(client.driver, old_uuid)
-        logger.info(f"   ✅ Old edge fetched successfully")
-        logger.info(f"   - old_edge.uuid: {old_edge.uuid}")
-        logger.info(f"   - old_edge.fact: {old_edge.fact[:100] if old_edge.fact else 'None'}...")
-        logger.info(f"   - old_edge.fact_embedding is None: {old_edge.fact_embedding is None}")
-        if old_edge.fact_embedding is not None:
-            logger.info(f"   - old_edge.fact_embedding type: {type(old_edge.fact_embedding)}")
-            logger.info(f"   - old_edge.fact_embedding length: {len(old_edge.fact_embedding)}")
-            logger.info(f"   - old_edge.fact_embedding first 3: {old_edge.fact_embedding[:3]}")
-        else:
-            logger.warning(f"   ⚠️  old_edge.fact_embedding is None!")
-
-        # Mark old fact as expired
-        logger.info(f"⏰ Marking old edge as expired...")
-        expired_at = datetime.now()
-        logger.info(f"   - expired_at to set: {expired_at}")
-        logger.info(f"   - old_edge.fact_embedding is None: {old_edge.fact_embedding is None}")
-
-        # Update expired_at directly with Cypher query to avoid fact_embedding issue
-        logger.info(f"💾 Updating expired_at directly in Neo4j (bypassing save())...")
-        try:
-            query = """
-            MATCH ()-[e:RELATES_TO {uuid: $uuid}]->()
-            SET e.expired_at = $expired_at
-            RETURN e.uuid AS uuid
-            """
-            # Use Neo4j driver session directly to avoid parameter issues
-            async with client.driver.session() as session:
-                result = await session.run(query, uuid=old_uuid, expired_at=expired_at)
-                records = [record async for record in result]
-                logger.info(f"   ✅ Old edge expired_at updated successfully via direct Cypher query")
-                logger.info(f"      - Updated {len(records)} record(s)")
-        except Exception as update_error:
-            logger.error(f"   ❌ Failed to update old edge expired_at")
-            logger.error(f"      - Exception type: {type(update_error).__name__}")
-            logger.error(f"      - Exception message: {str(update_error)}")
-            logger.exception("      - Full traceback:")
-            raise
+        # Fetch old edge and mark as expired
+        old_edge = await _fetch_and_expire_old_edge(client, old_uuid)
 
         # Determine source and target nodes
         logger.info(f"🔗 Determining source and target nodes...")
@@ -384,47 +326,11 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
         logger.info(f"   - source_uuid: {source_uuid}")
         logger.info(f"   - target_uuid: {target_uuid}")
 
-        # Generate embedding for the new fact
-        logger.info("=" * 80)
-        logger.info("Starting embedding generation for fact update")
-        logger.info(f"Fact text (first 100 chars): {update_request.fact[:100]}...")
-        logger.info(f"Fact text length: {len(update_request.fact)}")
-
+        # Generate embedding for new fact
         try:
-            # Check embedder availability
-            logger.info(f"Checking embedder: {client.embedder}")
-            logger.info(f"Embedder type: {type(client.embedder)}")
-
-            if client.embedder is None:
-                raise ValueError("Embedder is not initialized (client.embedder is None)")
-
-            # Attempt to generate embedding
-            logger.info("Calling client.embedder.create()...")
-            embedding_vector = await client.embedder.create(input_data=update_request.fact)
-
-            # Detailed logging of the result
-            logger.info(f"✅ Embedding generation completed successfully")
-            logger.info(f"   - Type: {type(embedding_vector)}")
-            logger.info(f"   - Is None: {embedding_vector is None}")
-            logger.info(f"   - Is list: {isinstance(embedding_vector, list)}")
-
-            if embedding_vector is not None:
-                logger.info(f"   - Length: {len(embedding_vector)}")
-                if len(embedding_vector) > 0:
-                    logger.info(f"   - First 3 values: {embedding_vector[:3]}")
-                    logger.info(f"   - Sample value type: {type(embedding_vector[0])}")
-            else:
-                logger.warning(f"   - Value is None!")
-
-            logger.info(f"   - String representation (first 200 chars): {str(embedding_vector)[:200]}")
-
+            embedding_vector = await _generate_fact_embedding(client, update_request.fact)
         except Exception as e:
-            logger.error("=" * 80)
-            logger.error(f"❌ Failed to generate embedding for new fact")
-            logger.error(f"   - Exception type: {type(e).__name__}")
-            logger.error(f"   - Exception message: {str(e)}")
-            logger.exception("   - Full traceback:")
-            logger.error("=" * 80)
+            logger.error(f"❌ Failed to generate embedding: {e}")
             return JSONResponse(
                 APIErrorResponse(
                     error=f"Failed to generate embedding for new fact: {e}",
@@ -433,120 +339,12 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
                 status_code=500,
             )
 
-        # Validation checks
-        logger.info("Validating embedding vector...")
-
-        if embedding_vector is None:
-            logger.error("❌ Validation failed: embedding_vector is None")
-            return JSONResponse(
-                APIErrorResponse(
-                    error="Embedding vector is None after generation",
-                    status_code=500,
-                ).model_dump(),
-                status_code=500,
-            )
-
-        if not isinstance(embedding_vector, list):
-            logger.error(f"❌ Validation failed: embedding_vector is not a list, got {type(embedding_vector)}")
-            return JSONResponse(
-                APIErrorResponse(
-                    error=f"Embedding vector must be a list, got {type(embedding_vector)}",
-                    status_code=500,
-                ).model_dump(),
-                status_code=500,
-            )
-
-        if len(embedding_vector) == 0:
-            logger.error("❌ Validation failed: embedding_vector is empty list")
-            return JSONResponse(
-                APIErrorResponse(
-                    error="Embedding vector is empty",
-                    status_code=500,
-                ).model_dump(),
-                status_code=500,
-            )
-
-        logger.info(f"✅ Validation passed: embedding_vector is valid list with {len(embedding_vector)} elements")
-        logger.info("=" * 80)
-
-        # Create new fact
-        logger.info("=" * 80)
-        logger.info("Creating new EntityEdge object...")
-        logger.info(f"   - source_node_uuid: {source_uuid}")
-        logger.info(f"   - target_node_uuid: {target_uuid}")
-        logger.info(f"   - group_id: {old_edge.group_id}")
-        logger.info(f"   - fact: {update_request.fact[:100]}...")
-        logger.info(f"   - fact_embedding type: {type(embedding_vector)}")
-        logger.info(f"   - fact_embedding length: {len(embedding_vector)}")
-
-        # Generate new UUID for the new edge
-        import uuid as uuid_lib
-        new_uuid = str(uuid_lib.uuid4())
-        logger.info(f"   - Generated new UUID: {new_uuid}")
-
-        # Prepare attributes dictionary
-        edge_attributes = update_request.attributes.copy() if update_request.attributes else {}
-
-        new_edge = EntityEdge(
-            uuid=new_uuid,
-            name=old_edge.name,  # Preserve relationship type from old edge
-            fact=update_request.fact,
-            fact_embedding=embedding_vector,
-            episodes=old_edge.episodes,  # Inherit episodes from old edge to preserve citations
-            created_at=datetime.now(),
-            expired_at=None,
-            invalid_at=None,
-            group_id=old_edge.group_id,
-            source_node_uuid=source_uuid,
-            target_node_uuid=target_uuid,
+        # Create and save new edge
+        new_edge = await _create_and_save_new_edge(
+            client, old_edge, update_request, embedding_vector, source_uuid, target_uuid
         )
 
-        logger.info(f"✅ EntityEdge object created successfully")
-        logger.info(f"   - new_edge.uuid: {new_edge.uuid}")
-        logger.info(f"   - new_edge.fact_embedding is None: {new_edge.fact_embedding is None}")
-        logger.info(f"   - new_edge.fact_embedding type: {type(new_edge.fact_embedding)}")
-        if new_edge.fact_embedding is not None:
-            logger.info(f"   - new_edge.fact_embedding length: {len(new_edge.fact_embedding)}")
-            logger.info(f"   - new_edge.fact_embedding first 3: {new_edge.fact_embedding[:3]}")
-
-        # Store custom attributes (like update_reason) in Neo4j properties
-        if edge_attributes:
-            logger.info(f"Custom attributes to store: {list(edge_attributes.keys())}")
-
-        # Save new edge
-        logger.info("Attempting to save new EntityEdge to Neo4j...")
-        try:
-            await new_edge.save(client.driver)
-            logger.info(f"✅ EntityEdge saved successfully")
-            logger.info(f"   - Saved UUID: {new_edge.uuid}")
-
-            # Add custom attributes to Neo4j after saving
-            if edge_attributes:
-                logger.info(f"Adding custom attributes to Neo4j edge...")
-                async with client.driver.session() as session:
-                    set_clauses = ", ".join([f"e.{key} = ${key}" for key in edge_attributes.keys()])
-                    query = f"""
-                    MATCH ()-[e:RELATES_TO {{uuid: $uuid}}]->()
-                    SET {set_clauses}
-                    RETURN e.uuid AS uuid
-                    """
-                    await session.run(query, uuid=new_uuid, **edge_attributes)
-                    logger.info(f"   ✅ Custom attributes added: {list(edge_attributes.keys())}")
-
-            logger.info("=" * 80)
-        except Exception as save_error:
-            logger.error("=" * 80)
-            logger.error(f"❌ Failed to save EntityEdge to Neo4j")
-            logger.error(f"   - Exception type: {type(save_error).__name__}")
-            logger.error(f"   - Exception message: {str(save_error)}")
-            logger.error(f"   - new_edge.fact_embedding at save time: {new_edge.fact_embedding is not None}")
-            if new_edge.fact_embedding is not None:
-                logger.error(f"   - new_edge.fact_embedding length: {len(new_edge.fact_embedding)}")
-            logger.exception("   - Full traceback:")
-            logger.error("=" * 80)
-            raise
-
-        # Fetch the new edge with citations for response
+        # Fetch citations for response
         logger.info("📚 Fetching citations for new edge...")
         new_edge_with_citations = await format_fact_result(new_edge, client.driver)
         logger.info(f"   ✅ Citations fetched: {len(new_edge_with_citations.get('citations', []))} citation(s)")
@@ -559,11 +357,186 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
             new_edge=new_edge_with_citations,
         )
 
-        return create_cors_response(response.model_dump())
+        return JSONResponse(response.model_dump())
 
     except Exception as e:
         logger.error(f"Error updating fact: {e}")
-        return create_cors_response(
+        return JSONResponse(
             APIErrorResponse(error=str(e), status_code=500).model_dump(),
             status_code=500,
         )
+
+
+# Helper functions for update_fact_api
+
+async def _fetch_and_expire_old_edge(client, old_uuid: str) -> EntityEdge:
+    """
+    Fetch old edge and mark it as expired.
+
+    Args:
+        client: Graphiti client
+        old_uuid: UUID of the edge to expire
+
+    Returns:
+        The old EntityEdge object
+    """
+    logger.info(f"📥 Fetching old edge by UUID: {old_uuid}")
+    old_edge = await EntityEdge.get_by_uuid(client.driver, old_uuid)
+    logger.info(f"   ✅ Old edge fetched successfully")
+    logger.info(f"   - old_edge.uuid: {old_edge.uuid}")
+    logger.info(f"   - old_edge.fact: {old_edge.fact[:100] if old_edge.fact else 'None'}...")
+
+    # Mark old fact as expired
+    logger.info(f"⏰ Marking old edge as expired...")
+    expired_at = datetime.now()
+
+    # Update expired_at directly with Cypher query
+    logger.info(f"💾 Updating expired_at directly in Neo4j...")
+    query = """
+    MATCH ()-[e:RELATES_TO {uuid: $uuid}]->()
+    SET e.expired_at = $expired_at
+    RETURN e.uuid AS uuid
+    """
+    async with client.driver.session() as session:
+        result = await session.run(query, uuid=old_uuid, expired_at=expired_at)
+        records = [record async for record in result]
+        logger.info(f"   ✅ Old edge expired_at updated successfully")
+        logger.info(f"      - Updated {len(records)} record(s)")
+
+    return old_edge
+
+
+async def _generate_fact_embedding(client, fact_text: str) -> list[float]:
+    """
+    Generate embedding vector for a fact.
+
+    Args:
+        client: Graphiti client with embedder
+        fact_text: Text to generate embedding for
+
+    Returns:
+        Embedding vector as list of floats
+
+    Raises:
+        ValueError: If embedder is not initialized or embedding generation fails
+    """
+    logger.info("=" * 80)
+    logger.info("Starting embedding generation for fact update")
+    logger.info(f"Fact text (first 100 chars): {fact_text[:100]}...")
+    logger.info(f"Fact text length: {len(fact_text)}")
+
+    # Check embedder availability
+    logger.info(f"Checking embedder: {client.embedder}")
+    logger.info(f"Embedder type: {type(client.embedder)}")
+
+    if client.embedder is None:
+        raise ValueError("Embedder is not initialized (client.embedder is None)")
+
+    # Generate embedding
+    logger.info("Calling client.embedder.create()...")
+    embedding_vector = await client.embedder.create(input_data=fact_text)
+
+    # Detailed logging
+    logger.info(f"✅ Embedding generation completed successfully")
+    logger.info(f"   - Type: {type(embedding_vector)}")
+    logger.info(f"   - Is None: {embedding_vector is None}")
+    logger.info(f"   - Is list: {isinstance(embedding_vector, list)}")
+
+    if embedding_vector is not None:
+        logger.info(f"   - Length: {len(embedding_vector)}")
+        if len(embedding_vector) > 0:
+            logger.info(f"   - First 3 values: {embedding_vector[:3]}")
+
+    # Validation
+    logger.info("Validating embedding vector...")
+
+    if embedding_vector is None:
+        raise ValueError("Embedding vector is None after generation")
+
+    if not isinstance(embedding_vector, list):
+        raise ValueError(f"Embedding vector must be a list, got {type(embedding_vector)}")
+
+    if len(embedding_vector) == 0:
+        raise ValueError("Embedding vector is empty")
+
+    logger.info(f"✅ Validation passed: embedding_vector is valid list with {len(embedding_vector)} elements")
+    logger.info("=" * 80)
+
+    return embedding_vector
+
+
+async def _create_and_save_new_edge(
+    client,
+    old_edge: EntityEdge,
+    update_request: FactUpdateRequest,
+    embedding_vector: list[float],
+    source_uuid: str,
+    target_uuid: str
+) -> EntityEdge:
+    """
+    Create and save new edge with updated fact.
+
+    Args:
+        client: Graphiti client
+        old_edge: Original edge to copy metadata from
+        update_request: Update request with new fact text and attributes
+        embedding_vector: Generated embedding for new fact
+        source_uuid: Source node UUID
+        target_uuid: Target node UUID
+
+    Returns:
+        The newly created EntityEdge
+    """
+    logger.info("=" * 80)
+    logger.info("Creating new EntityEdge object...")
+    logger.info(f"   - source_node_uuid: {source_uuid}")
+    logger.info(f"   - target_node_uuid: {target_uuid}")
+    logger.info(f"   - group_id: {old_edge.group_id}")
+    logger.info(f"   - fact: {update_request.fact[:100]}...")
+
+    # Generate new UUID
+    import uuid as uuid_lib
+    new_uuid = str(uuid_lib.uuid4())
+    logger.info(f"   - Generated new UUID: {new_uuid}")
+
+    # Prepare attributes
+    edge_attributes = update_request.attributes.copy() if update_request.attributes else {}
+
+    # Create new edge
+    new_edge = EntityEdge(
+        uuid=new_uuid,
+        name=old_edge.name,  # Preserve relationship type
+        fact=update_request.fact,
+        fact_embedding=embedding_vector,
+        episodes=old_edge.episodes,  # Inherit episodes to preserve citations
+        created_at=datetime.now(),
+        expired_at=None,
+        invalid_at=None,
+        group_id=old_edge.group_id,
+        source_node_uuid=source_uuid,
+        target_node_uuid=target_uuid,
+    )
+
+    logger.info(f"✅ EntityEdge object created successfully")
+    logger.info(f"   - new_edge.uuid: {new_edge.uuid}")
+
+    # Save new edge
+    logger.info("Attempting to save new EntityEdge to Neo4j...")
+    await new_edge.save(client.driver)
+    logger.info(f"✅ EntityEdge saved successfully")
+
+    # Add custom attributes
+    if edge_attributes:
+        logger.info(f"Adding custom attributes to Neo4j edge...")
+        async with client.driver.session() as session:
+            set_clauses = ", ".join([f"e.{key} = ${key}" for key in edge_attributes.keys()])
+            query = f"""
+            MATCH ()-[e:RELATES_TO {{uuid: $uuid}}]->()
+            SET {set_clauses}
+            RETURN e.uuid AS uuid
+            """
+            await session.run(query, uuid=new_uuid, **edge_attributes)
+            logger.info(f"   ✅ Custom attributes added: {list(edge_attributes.keys())}")
+
+    logger.info("=" * 80)
+    return new_edge

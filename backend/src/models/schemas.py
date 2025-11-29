@@ -1,8 +1,8 @@
 """
-データモデル定義
+Data model definitions
 """
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any
 from pydantic import BaseModel, Field
 
 
@@ -12,96 +12,96 @@ class CitationInfo(BaseModel):
     episode_name: str
     source: str
     source_description: str
-    created_at: Optional[str] = None
-    source_url: Optional[str] = None
+    created_at: str | None = None
+    source_url: str | None = None
 
 
 class EntityNode(BaseModel):
-    """エンティティノード"""
+    """Entity node"""
     uuid: str
     name: str
-    summary: Optional[str] = None
+    summary: str | None = None
     created_at: datetime
-    labels: List[str] = []
-    attributes: Dict[str, Any] = {}
+    labels: list[str] = []
+    attributes: dict[str, Any] = {}
 
 
 class EntityEdge(BaseModel):
-    """エンティティ間の関係"""
+    """Relationship between entities"""
     uuid: str
     source_node_uuid: str
     target_node_uuid: str
     name: str
     fact: str
     created_at: datetime
-    valid_at: Optional[datetime] = None
-    invalid_at: Optional[datetime] = None
-    expired_at: Optional[datetime] = None
-    episodes: List[str] = []
-    citations: List[CitationInfo] = []
-    # 修正履歴フィールド
-    updated_at: Optional[datetime] = None
-    original_fact: Optional[str] = None
-    update_reason: Optional[str] = None
+    valid_at: datetime | None = None
+    invalid_at: datetime | None = None
+    expired_at: datetime | None = None
+    episodes: list[str] = []
+    citations: list[CitationInfo] = []
+    # Fact update history fields
+    updated_at: datetime | None = None
+    original_fact: str | None = None
+    update_reason: str | None = None
 
 
 class SearchResult(BaseModel):
-    """検索結果"""
-    nodes: List[EntityNode] = []
-    edges: List[EntityEdge] = []
+    """Search result"""
+    nodes: list[EntityNode] = []
+    edges: list[EntityEdge] = []
     total_count: int = 0
 
 
 class ChatMessage(BaseModel):
-    """チャットメッセージ"""
+    """Chat message"""
     role: str = Field(..., description="user or assistant")
     content: str
 
 
 class ChatRequest(BaseModel):
-    """チャットリクエスト"""
+    """Chat request"""
     message: str
-    history: List[ChatMessage] = []
+    history: list[ChatMessage] = []
     include_search_results: bool = True
 
 
 class ChatResponse(BaseModel):
-    """チャットレスポンス"""
+    """Chat response"""
     answer: str
-    search_results: Optional[SearchResult] = None
-    sources: List[str] = []
+    search_results: SearchResult | None = None
+    sources: list[str] = []
 
 
 class ManualSearchRequest(BaseModel):
-    """手動検索リクエスト"""
+    """Manual search request"""
     query: str
     limit: int = 10
 
 
 class UpdateFactRequest(BaseModel):
-    """Fact更新リクエスト"""
+    """Fact update request"""
     edge_uuid: str
     new_fact: str
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class UpdateFactResponse(BaseModel):
-    """Fact更新レスポンス"""
+    """Fact update response"""
     success: bool
     message: str
-    updated_edge: Optional[EntityEdge] = None
+    updated_edge: EntityEdge | None = None
 
 
 class AddEpisodeRequest(BaseModel):
-    """エピソード追加リクエスト"""
+    """Episode addition request"""
     name: str
     content: str
     source: str = "user_input"
-    source_description: Optional[str] = None
+    source_description: str | None = None
 
 
 class AddEpisodeResponse(BaseModel):
-    """エピソード追加レスポンス"""
+    """Episode addition response"""
     success: bool
     message: str
-    episode_uuid: Optional[str] = None
+    episode_uuid: str | None = None
