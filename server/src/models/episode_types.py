@@ -44,7 +44,7 @@ class EpisodeProcessingConfig(BaseModel):
     source_description: str = Field(..., description="Description of the episode source")
     source_url: str | None = Field(default=None, description="URL of the source")
     episode_type: EpisodeType = Field(..., description="Type of the episode")
-    entity_types: list[dict[str, str]] = Field(..., description="Entity types for extraction")
+    entity_types: dict | None = Field(default=None, description="Entity types for extraction (dict of BaseModel types)")
     uuid: str | None = Field(default=None, description="Episode UUID")
     reference_time: datetime | None = Field(
         default=None,

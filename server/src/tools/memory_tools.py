@@ -116,7 +116,7 @@ async def add_memory(
             source_description=source_description,
             source_url=source_url,
             episode_type=episode_type,
-            entity_types=graphiti_service.entity_types or [],
+            entity_types=graphiti_service.entity_types,
             uuid=uuid or None,
             reference_time=parsed_reference_time,
         )
