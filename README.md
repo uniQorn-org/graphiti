@@ -228,42 +228,7 @@ Claude DesktopやCursorの設定ファイルに以下を追加:
 - `search_facts`: ナレッジグラフを検索
 - `get_entity`: エンティティの詳細を取得
 
-### 2. Pythonクライアントとして使用
-
-```python
-import asyncio
-from client.graphiti_client import GraphitiClient
-
-async def main():
-    # クライアント作成
-    client = GraphitiClient(
-        uri="bolt://localhost:20687",
-        user="neo4j",
-        password="password123"
-    )
-
-    # インデックス/制約の構築（初回のみ）
-    await client.ensure_ready()
-
-    # エピソード追加
-    await client.add_episode(
-        name="meeting_2024_01_15",
-        episode_body="2024年1月15日の会議で、新機能の実装計画を議論しました。",
-        source="user_input",
-        source_description="定例会議の議事録"
-    )
-
-    # 検索
-    results = await client.search("新機能の実装計画")
-    print(results)
-
-    # クライアントを閉じる
-    await client.close()
-
-asyncio.run(main())
-```
-
-### 3. REST API経由で使用
+### 2. REST API経由で使用
 
 ```bash
 # 検索
@@ -294,7 +259,6 @@ graphiti/
 ├── .env.example          # 環境変数テンプレート
 ├── SETUP.md              # 詳細セットアップガイド
 ├── README.md             # このファイル
-├── client/               # Pythonクライアント
 ├── server/               # MCPサーバー
 │   ├── src/             # サーバーソースコード
 │   │   ├── ingestion/           # データ取り込みモジュール

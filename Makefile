@@ -206,13 +206,9 @@ query-facts: ## Query all facts in Neo4j
 
 ##@ Testing & Development
 
-test: ## Run tests
-	@echo "$(BLUE)Running tests...$(NC)"
-	@if [ -d "tests" ]; then \
-		python tests/test_graphiti.py; \
-	else \
-		echo "$(YELLOW)No tests directory found$(NC)"; \
-	fi
+test: ## Run tests (placeholder - no tests currently)
+	@echo "$(YELLOW)No tests configured$(NC)"
+	@echo "To verify the system, use: make health"
 
 search: ## Search the knowledge graph (usage: make search QUERY="your query")
 	@if [ -z "$(QUERY)" ]; then \
