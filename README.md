@@ -1,73 +1,95 @@
-# Graphiti MCP - Real-Time Knowledge Graph Server
+# Graphiti Simple Chat Bot
 
-Graphiti MCPは、[Graphiti](https://github.com/getzep/graphiti)を使用した時間情報付きナレッジグラフの自動構築・更新システムです。Neo4jとOpenAI APIを組み合わせ、動的に変化するデータからリアルタイムに知識グラフを生成し、ハイブリッド検索（埋め込み + BM25 + グラフ探索）で素早く情報を取得できます。
+> [!NOTE]
+> 千手観音PJ: uniQornチームの1技術、Graphitiを使ったシンプルなチャットボットです
+> 
+> uniQornは、[千手観音プロジェクト～ASI時代を切り拓く新プロジェクト始動～](https://wiki.workers-hub.com/pages/viewpage.action?pageId=2691270575)で上位20チームに残った24卒同期で業務効率化AIを開発しているチームです。
+> 
+> 24卒同期の11名で構成されていますが、このGraphitiをよく触っている開発者は、ytonoyam, saoku, stakakurです。:BIG KANSYA:
 
-## 特徴
+> [!NOTE]
+> もし動かなかった場合は、PRか ytonoyam までDMをお願いしますmm
+>  
+> PRが飛んできたら泣いて喜びます🙏
 
-- **リアルタイム増分更新**: 新規データ（エピソード）を即座に反映
-- **二重時間モデル**: 出来事の発生時刻と取り込み時刻を別トラックで管理
-- **ハイブリッド検索**: 埋め込み・BM25・グラフトラバーサルを組み合わせた高度な検索
-- **柔軟なオントロジー**: Pydanticで独自のエンティティ/エッジ型を定義可能
-- **MCPサーバー**: Model Context Protocol対応で、Claude DesktopやCursorから利用可能
-- **REST API**: FastAPIベースのHTTP APIでプログラマティックにアクセス可能
-- **自動英語翻訳**: 日本語データを自動的に英語に翻訳してインデックス化
-- **ソース追跡**: すべてのFactにソースURL（Slack、GitHub、Zoom）を自動保存
+**「現在、チームにはどのような問題が存在するのか？」**
+
+一見、簡単そうな質問に見えますが、ベクトル検索では、
+
+- タスクの依存関係の把握
+- 時系列の把握
+
+は構造上把握は難しいという特徴があります。
+
+**ナレッジグラフを使うアプリだからこその出力を得られている**という図です(感動の涙)
+
+<img width="1375" alt="image" src="https://ghe.corp.yahoo.co.jp/ytonoyam/graphiti-simple-chat/assets/13362/09596c44-3ce8-42f6-8726-1ffa51e88a2a">
+
+
+<img width="811" alt="スクリーンショット 2025-11-26 6 18 26" src="https://ghe.corp.yahoo.co.jp/ytonoyam/graphiti-simple-chat/assets/13362/05c79cf2-8d62-4924-a7d2-6a5df5c3c66c">
+
+[Graphiti](https://github.com/getzep/graphiti)は、時間情報付きナレッジグラフの自動構築・更新システムです。
+ベクトルDBであるNeo4jとOpenAI APIを組み合わせ、動的に変化するデータからリアルタイムに知識グラフを生成し、ハイブリッド検索（埋め込み + BM25 + グラフ探索）で情報を取得できます。Neo4jは公式のDocker Image(Apache 2.0)を使っています。
+
+**graphiti-core(Apache 2.0)がライブラリとして存在しており、そのライブラリをGraphiti MCP(uniQornの自作)で作成しています。**
+**そのため、社内でも本ライブラリおよびMCPは利用可能です。[MCPに関する確認・問い合わせフロー / MCP Confirmation and Inquiry Flow](https://wiki.workers-hub.com/pages/viewpage.action?pageId=2592343328)のケースBに該当します。**
 
 ## 必要な環境
 
-- **Docker** 20.10以降
-- **Docker Compose** v2.0以降
-- **OpenAI API Key**
-- **make** (オプション、推奨)
+- Docker 20.10以降
+- Docker Compose v2.0以降
+- OpenAI API Key（または企業プロキシAPIキー）
+- make
+- cc-throttle（レート制限対策、必須） - [セットアップガイド](docs/CC_THROTTLE_SETUP.md)
 
 ## クイックスタート
 
-### 🚀 Makefileを使用する方法（推奨）
+### 事前準備（重要）
 
-最も簡単な方法です：
-
-```bash
-# 1. リポジトリのクローン
-git clone https://github.com/uniQorn-org/graphiti.git
-cd graphiti
-
-# 2. ワンコマンドでセットアップと起動
-make quick-start
-```
-
-初回実行時は、OpenAI APIキーの設定を求められます。`.env`ファイルを編集して設定してください：
+Graphitiは並列で多数のOpenAI APIリクエストを送信するため、cc-throttle（レート制限プロキシ）の起動が必須です。
 
 ```bash
-# .envファイルを編集
-nano .env  # または vim .env、code .env など
-# OPENAI_API_KEY=your_openai_api_key_here を設定
-
-# 再度起動
-make start
-```
-
-### 📦 Docker Composeを直接使用する方法
-
-Makefileを使用しない場合：
-
-```bash
-# 1. リポジトリのクローン
-git clone https://github.com/uniQorn-org/graphiti.git
-cd graphiti
-
-# 2. 環境変数の設定
+# 1. cc-throttleをクローン・起動（別ターミナル）
+git clone https://ghe.corp.yahoo.co.jp/ytonoyam/cc-throttle-openai
+cd cc-throttle
 cp .env.example .env
-nano .env  # OPENAI_API_KEYを設定
+# .envを編集してAPIキーを設定
+bun install
+bun run index.ts
 
-# 3. データディレクトリの作成
-mkdir -p data/github data/slack data/zoom
-
-# 4. サービスの起動
-docker compose up -d
-
-# 5. 健全性確認
-docker compose ps
+# ポート8080でcc-throttleが起動します
+# 詳細は docs/CC_THROTTLE_SETUP.md を参照
 ```
+
+### セットアップと起動
+
+```bash
+# 2. Graphitiリポジトリのクローン
+git clone git@ghe.corp.yahoo.co.jp:ytonoyam/graphiti-simple-chat.git
+cd graphiti
+
+# 3. .envファイルを編集してAPIキーを設定
+cp .env.example .env
+nano .env  # または vim .env、code .env など
+# 必須項目:
+#   - LLM__PROVIDERS__OPENAI__API_KEY（PAT）
+#   - OPENAI_API_KEY（バックエンド用、同じキー）
+#   - GITHUB_TOKEN（GitHub連携する場合）
+
+# 4. ワンコマンドでセットアップと起動
+make quick-start
+
+# 5. デモデータをLLMでナレッジグラフに変換
+make demo
+```
+
+### 推奨LLMモデル
+
+gpt-4o-mini以上あれば十分です。gpt-5は時間がかなりかかるのでタイパよくありません。
+gpt-oss 20bは性能低すぎてまともに使えません。
+
+> [!WARNING]
+> [LOCAL_LLM_SETUP.md](docs/LOCAL_LLM_SETUP.md)のローカルLLM（gpt-oss 20b）は動作確認用です。精度が低く実用には不向きです。
 
 ### アクセスURL
 
@@ -75,11 +97,11 @@ docker compose ps
 
 | サービス | URL | 認証情報 |
 |---------|-----|---------|
-| **フロントエンドUI** | http://localhost:20002 | なし |
-| **Neo4j Browser** | http://localhost:20474 | user: `neo4j`, pass: `password123` |
-| **バックエンドAPI** | http://localhost:20001/docs | なし |
-| **Graphiti MCP** | http://localhost:30547 | なし |
-| **MinIO Console** | http://localhost:20735 | user: `minio`, pass: `miniosecret` |
+| フロントエンドUI | http://localhost:20002 | なし |
+| Neo4j Browser | http://localhost:20474 | user: `neo4j`, pass: `password123` |
+| バックエンドAPI | http://localhost:20001/docs | なし |
+| Graphiti MCP | http://localhost:30547 | なし |
+| MinIO Console | http://localhost:20735 | user: `minio`, pass: `miniosecret` |
 
 ### 動作確認
 
@@ -94,7 +116,7 @@ curl http://localhost:20001/health
 
 ## Makefileコマンド一覧
 
-便利なMakefileコマンドを用意しています。詳細は `make help` で確認できます。
+超便利なMakefileコマンドを用意しています。詳細は `make help` で確認できます。
 
 ### 基本操作
 
@@ -130,11 +152,12 @@ make ingest-github \
 # Slack Messages
 make ingest-slack \
   SLACK_TOKEN=xoxc-xxx \
-  WORKSPACE_ID=T... \
+  SLACK_COOKIE= \
   CHANNEL_ID=C... \
   DAYS=7
 
 # Zoom Transcripts (data/zoom/にVTTファイルを配置後)
+# デモデータは既に配置してあります
 make ingest-zoom
 ```
 
@@ -162,26 +185,12 @@ make clean-data    # すべてのデータを削除（警告: データが失わ
 make clean-cache   # Pythonキャッシュをクリア
 ```
 
-## 🌐 企業プロキシ設定
-
-社内ネットワークでプロキシを使用している場合、`.env` ファイルで設定できます：
-
-```bash
-# プロキシを有効化（本番環境）
-PROXY_USE=TRUE
-OPENAI_PROXY=https://openai-proxy.company.com
-NO_PROXY=localhost,127.0.0.1,neo4j,minio,graphiti-mcp
-
-# ローカル開発環境（プロキシなし）
-PROXY_USE=FALSE
-```
-
-詳細は **[PROXY_SETUP.md](docs/PROXY_SETUP.md)** を参照してください。
-
 ## 📚 詳細なドキュメント
 
 - **[SETUP.md](SETUP.md)** - 詳細なセットアップガイド、トラブルシューティング
 - **[PROXY_SETUP.md](docs/PROXY_SETUP.md)** - 企業プロキシの設定方法
+- **[CC_THROTTLE_SETUP.md](docs/CC_THROTTLE_SETUP.md)** - cc-throttle レート制限プロキシの設定方法（429エラー対策）
+- **[LOCAL_LLM_SETUP.md](docs/LOCAL_LLM_SETUP.md)** - LM Studioを使用したローカルLLM設定（レート制限回避）
 - **[Graphiti解説 (日本語)](docs/graphiti.md)** - Graphitiの仕組みと使い方
 - **[REST API仕様](server/docs/REST_API.md)** - API仕様とエンドポイント
 - **[Graphiti公式ドキュメント](https://help.getzep.com/graphiti/)** - Graphiti本体のドキュメント
@@ -310,9 +319,9 @@ Graphiti MCPは、複数のデータソースからデータを取り込み、�
 
 ### 対応データソース
 
-1. **Slack** - メッセージとスレッド（自動英語翻訳）
-2. **GitHub** - Issues（コメント含む、自動英語翻訳）
-3. **Zoom** - 文字起こしVTTファイル（MinIOに保存、自動英語翻訳）
+1. Slack - メッセージとスレッド（自動英語翻訳）
+2. GitHub - Issues（コメント含む、自動英語翻訳）
+3. Zoom - 文字起こしVTTファイル（MinIOに保存、自動英語翻訳）
 
 ### GitHub Issuesの取り込み
 
@@ -320,13 +329,13 @@ Graphiti MCPは、複数のデータソースからデータを取り込み、�
 # Makefileを使用（推奨）
 make ingest-github \
   GITHUB_TOKEN=ghp_xxxxxxxxxxxx \
-  GITHUB_OWNER=uniQorn-org \
-  GITHUB_REPO=uniqorn-zoom
+  GITHUB_OWNER=hoge-org \
+  GITHUB_REPO=hoge-zoom
 
 # 手動で実行
 docker compose exec -e GITHUB_TOKEN=ghp_xxxxxxxxxxxx \
-  -e GITHUB_OWNER=uniQorn-org \
-  -e GITHUB_REPO=uniqorn-zoom \
+  -e GITHUB_OWNER=hoge-org \
+  -e GITHUB_REPO=hoge-zoom \
   graphiti-mcp python src/scripts/ingest_github.py
 ```
 
@@ -437,84 +446,6 @@ docker compose logs -f graphiti-mcp
 docker compose logs -f neo4j
 ```
 
-## トラブルシューティング
-
-よくある問題と解決方法は[SETUP.md](SETUP.md#トラブルシューティング)に記載しています。
-
-### Neo4jが起動しない
-
-`.env`ファイルでメモリ設定を調整:
-
-```env
-NEO4J_HEAP_INITIAL_SIZE=256M
-NEO4J_HEAP_MAX_SIZE=512M
-NEO4J_PAGECACHE_SIZE=256M
-```
-
-### OpenAI APIのレート制限エラー (429)
-
-`.env`ファイルで並列度を調整:
-
-```env
-SEMAPHORE_LIMIT=5  # Tierに応じて 1-50
-```
-
-- Tier 1 (無料): 1-2
-- Tier 2: 5-8
-- Tier 3: 10-15
-- Tier 4: 20-50
-
-### コンテナの完全リセット
-
-```bash
-# Makefileを使用
-make clean-data
-make start
-
-# Docker Composeを直接使用
-docker compose down -v
-docker compose up -d
-```
-
-詳細は[SETUP.md](SETUP.md)を参照してください。
-
-## 社内検索Bot
-
-### 概要
-
-LangChain + Graphitiを使った対話型社内検索システムです。
-
-### 主な機能
-
-1. **AIチャット** - 自然言語で質問すると、ナレッジグラフを検索して回答
-2. **手動検索** - キーワードでナレッジグラフを直接検索
-3. **Fact編集** - 検索結果から間違った情報を修正可能
-
-### 使い方
-
-```bash
-# 起動
-make start
-
-# アクセス
-# フロントエンド: http://localhost:20002
-# バックエンドAPI: http://localhost:20001/docs
-```
-
-詳細は以下を参照：
-- [バックエンド README](backend/README.md)
-- [フロントエンド README](frontend/README.md)
-
-## ライセンス
-
-Apache-2.0
-
 ## コントリビューション
 
-Issue・Pull Requestを歓迎します！
-
-## サポート
-
-- **ドキュメント**: [SETUP.md](SETUP.md)、[docs/](docs/)
-- **Issue**: https://github.com/uniQorn-org/graphiti/issues
-- **Graphiti公式**: https://help.getzep.com/graphiti/
+PRを投げて頂けるとytonoyamとuniQornの同期たちが泣いて喜びます

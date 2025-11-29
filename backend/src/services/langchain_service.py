@@ -47,12 +47,25 @@ class LangChainService:
         # 1. HTTP_PROXY/HTTPS_PROXY environment variables (set above)
         # 2. NO_PROXY environment variable (from .env)
         # No need to pass http_client parameter
-        self.llm = ChatOpenAI(
-            api_key=openai_api_key,
-            model=model,
-            temperature=0.7,
-            streaming=False
-        )
+
+        # Check if custom base_url is set (for cc-throttle or corporate proxy)
+        base_url = os.getenv("OPENAI_BASE_URL")
+        if base_url:
+            logger.info(f"Using custom OpenAI base URL: {base_url}")
+            self.llm = ChatOpenAI(
+                api_key=openai_api_key,
+                base_url=base_url,
+                model=model,
+                temperature=0.7,
+                streaming=False
+            )
+        else:
+            self.llm = ChatOpenAI(
+                api_key=openai_api_key,
+                model=model,
+                temperature=0.7,
+                streaming=False
+            )
 
         # プロンプトテンプレート
         self.prompt = ChatPromptTemplate.from_messages(

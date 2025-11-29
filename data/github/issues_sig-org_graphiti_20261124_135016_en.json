@@ -1,0 +1,101 @@
+{
+  "owner": "sig-org",
+  "repo": "graphiti",
+  "state": "all",
+  "fetched_at": "2025-11-26T18:45:54.415295",
+  "total_issues": 3,
+  "max_issues": 3,
+  "translated": true,
+  "issues": [
+    {
+      "number": 101,
+      "title": "Rate limiter over-counts burst requests on /v1/chat",
+      "original_title": "Rate limiter over-counts burst requests on /v1/chat",
+      "body": "### Summary\nThe sliding-window rate limiter for `/v1/chat` sometimes over-counts requests\nwhen traffic comes in short bursts.\n\n### Details\n- Reproduced during the meeting in the VTT transcript.\n- We sent ~200 req/s from a single client.\n- Some requests were rejected even though we should have been under the limit.\n\n### Expected Behavior\n- Clients hitting the documented limit should get predictable 429 responses.\n\n### Actual Behavior\n- 429s show up earlier than expected and in uneven clusters.\n\n### Hypothesis\n- Window boundaries rely on key expiry in Redis.\n- Under load, keys expire slightly earlier and cause inconsistent counts.\n\n### Next Steps\n- [ ] Replace expiry-based logic with timestamp bucket aggregation.\n- [ ] Align the implementation with what we discussed in Slack.\n- [ ] Add regression tests for bursty traffic patterns.",
+      "original_body": "### Summary\nThe sliding-window rate limiter for `/v1/chat` sometimes over-counts requests\nwhen traffic comes in short bursts.\n\n### Details\n- Reproduced during the meeting in the VTT transcript.\n- We sent ~200 req/s from a single client.\n- Some requests were rejected even though we should have been under the limit.\n\n### Expected Behavior\n- Clients hitting the documented limit should get predictable 429 responses.\n\n### Actual Behavior\n- 429s show up earlier than expected and in uneven clusters.\n\n### Hypothesis\n- Window boundaries rely on key expiry in Redis.\n- Under load, keys expire slightly earlier and cause inconsistent counts.\n\n### Next Steps\n- [ ] Replace expiry-based logic with timestamp bucket aggregation.\n- [ ] Align the implementation with what we discussed in Slack.\n- [ ] Add regression tests for bursty traffic patterns.",
+      "state": "open",
+      "html_url": "https://github.com/sig-org/graphiti/issues/101",
+      "created_at": "2025-11-24T10:00:00+00:00",
+      "updated_at": "2025-11-24T10:05:00+00:00",
+      "user": "Aki",
+      "labels": [
+        "backend",
+        "api",
+        "rate-limiting",
+        "bug"
+      ],
+      "comments_count": 2,
+      "comments": [
+        {
+          "user": "Sora",
+          "created_at": "2025-11-24T10:06:00+00:00",
+          "body": "Matches what we described in the Slack demo thread.\nIf we switch to per-second timestamp buckets, we should be able to compute\nthe sliding window without depending on Redis key expiry timing.",
+          "original_body": "Matches what we described in the Slack demo thread.\nIf we switch to per-second timestamp buckets, we should be able to compute\nthe sliding window without depending on Redis key expiry timing."
+        },
+        {
+          "user": "Aki",
+          "created_at": "2025-11-24T10:07:00+00:00",
+          "body": "Agree. I'll start with a small helper to aggregate request timestamps\nand we can wire it into the existing middleware.",
+          "original_body": "Agree. I'll start with a small helper to aggregate request timestamps\nand we can wire it into the existing middleware."
+        }
+      ]
+    },
+    {
+      "number": 102,
+      "title": "Webhook processor retries twice on 5xx responses",
+      "original_title": "Webhook processor retries twice on 5xx responses",
+      "body": "### Summary\nThe webhook processor occasionally triggers duplicate retries when the upstream\nservice responds with 5xx errors.\n\n### Context\n- This was mentioned in the VTT conversation as part of the job runner discussion.\n- Also referenced in the Slack thread about matching issues to transcripts.\n\n### Details\n- Two async workers pick up the same event around the same time.\n- Both schedule a retry, resulting in duplicate outbound calls.\n\n### Expected Behavior\n- At most one retry attempt per webhook event for a given failure window.\n\n### Proposed Fix\n- Introduce an atomic retry-claim mechanism using Redis.\n- Consider a small Lua script or a single `SETNX`-based lock with TTL.\n- Add metrics for `webhook_retry_conflict_total` to detect regressions.",
+      "original_body": "### Summary\nThe webhook processor occasionally triggers duplicate retries when the upstream\nservice responds with 5xx errors.\n\n### Context\n- This was mentioned in the VTT conversation as part of the job runner discussion.\n- Also referenced in the Slack thread about matching issues to transcripts.\n\n### Details\n- Two async workers pick up the same event around the same time.\n- Both schedule a retry, resulting in duplicate outbound calls.\n\n### Expected Behavior\n- At most one retry attempt per webhook event for a given failure window.\n\n### Proposed Fix\n- Introduce an atomic retry-claim mechanism using Redis.\n- Consider a small Lua script or a single `SETNX`-based lock with TTL.\n- Add metrics for `webhook_retry_conflict_total` to detect regressions.",
+      "state": "open",
+      "html_url": "https://github.com/sig-org/graphiti/issues/102",
+      "created_at": "2025-11-24T10:10:00+00:00",
+      "updated_at": "2025-11-24T10:15:00+00:00",
+      "user": "Sora",
+      "labels": [
+        "backend",
+        "webhook",
+        "bug"
+      ],
+      "comments_count": 2,
+      "comments": [
+        {
+          "user": "Aki",
+          "created_at": "2025-11-24T10:16:00+00:00",
+          "body": "I'll prototype the Lua script approach and add unit tests.\nWe can reuse most of the helper logic from the job runner lock code.",
+          "original_body": "I'll prototype the Lua script approach and add unit tests.\nWe can reuse most of the helper logic from the job runner lock code."
+        },
+        {
+          "user": "Sora",
+          "created_at": "2025-11-24T10:17:00+00:00",
+          "body": "Once it's ready, let's also update the demo Slack messages so the flow\nfrom transcript → issue → Slack summary still makes sense.",
+          "original_body": "Once it's ready, let's also update the demo Slack messages so the flow\nfrom transcript → issue → Slack summary still makes sense."
+        }
+      ]
+    },
+    {
+      "number": 103,
+      "title": "Document end-to-end demo: transcript → issues → Slack summary",
+      "original_title": "Document end-to-end demo: transcript → issues → Slack summary",
+      "body": "### Goal\nCreate a clear end-to-end story that connects:\n- The VTT meeting transcript about the chat API rate limiter and webhook retries.\n- The GitHub issues JSON (this repository).\n- The Slack-style JSON used for summarization demos.\n\n### Tasks\n- [ ] Ensure entity names (Aki, Sora, endpoint names) are consistent across all artifacts.\n- [ ] Add a short `README.md` section explaining how the three data sources relate.\n- [ ] Provide example prompts for generating summaries and issue drafts from the transcript.\n\n### Notes\n- This is demo-only data. No real tokens, URLs, or customer information.\n- Names are intentionally generic: \"Aki\" and \"Sora\".\n",
+      "original_body": "### Goal\nCreate a clear end-to-end story that connects:\n- The VTT meeting transcript about the chat API rate limiter and webhook retries.\n- The GitHub issues JSON (this repository).\n- The Slack-style JSON used for summarization demos.\n\n### Tasks\n- [ ] Ensure entity names (Aki, Sora, endpoint names) are consistent across all artifacts.\n- [ ] Add a short `README.md` section explaining how the three data sources relate.\n- [ ] Provide example prompts for generating summaries and issue drafts from the transcript.\n\n### Notes\n- This is demo-only data. No real tokens, URLs, or customer information.\n- Names are intentionally generic: \"Aki\" and \"Sora\".\n",
+      "state": "open",
+      "html_url": "https://github.com/sig-org/graphiti/issues/103",
+      "created_at": "2025-11-24T10:20:00+00:00",
+      "updated_at": "2025-11-24T10:25:00+00:00",
+      "user": "Aki",
+      "labels": [
+        "docs",
+        "demo"
+      ],
+      "comments_count": 1,
+      "comments": [
+        {
+          "user": "Sora",
+          "created_at": "2025-11-24T10:26:00+00:00",
+          "body": "I'll draft the README section and reference the exact filenames\nfor the VTT, GitHub issues JSON, and Slack JSON so users can plug them\ndirectly into their pipelines.",
+          "original_body": "I'll draft the README section and reference the exact filenames\nfor the VTT, GitHub issues JSON, and Slack JSON so users can plug them\ndirectly into their pipelines."
+        }
+      ]
+    }
+  ]
+}

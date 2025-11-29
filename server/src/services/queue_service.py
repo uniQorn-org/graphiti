@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
 from typing import Any
@@ -110,6 +111,7 @@ class QueueService:
         episode_type: Any,
         entity_types: Any,
         uuid: str | None,
+        reference_time: datetime | None = None,
     ) -> int:
         """Add an episode for processing.
 
@@ -122,6 +124,8 @@ class QueueService:
             episode_type: Type of the episode
             entity_types: Entity types for extraction
             uuid: Episode UUID
+            reference_time: Optional timestamp representing when the episode occurred.
+                          If not provided, current time will be used.
 
         Returns:
             The position in the queue
@@ -132,42 +136,74 @@ class QueueService:
             )
 
         async def process_episode():
-            """Process the episode using the graphiti client."""
-            try:
-                logger.info(f"Processing episode {uuid} for group {group_id}")
+            """Process the episode using the graphiti client with retry logic for rate limits."""
+            # Get delay from environment variable (default: 20 seconds)
+            delay = int(os.environ.get("EPISODE_PROCESSING_DELAY", "20"))
+            max_retries = 5  # Maximum number of retries for rate limit errors
+            retry_count = 0
 
-                # Embed source_url into source_description if provided
-                final_source_description = source_description
-                if source_url:
-                    if source_description:
-                        final_source_description = f"{source_description}, source_url: {source_url}"
+            while retry_count <= max_retries:
+                try:
+                    logger.info(f"Processing episode {uuid} for group {group_id} (attempt {retry_count + 1}/{max_retries + 1})")
+
+                    # Embed source_url into source_description if provided
+                    final_source_description = source_description
+                    if source_url:
+                        if source_description:
+                            final_source_description = f"{source_description}, source_url: {source_url}"
+                        else:
+                            final_source_description = f"source_url: {source_url}"
+
+                    # Use provided reference_time, or fallback to current time
+                    effective_reference_time = reference_time or datetime.now(timezone.utc)
+
+                    # Process the episode using the graphiti client
+                    await self._graphiti_client.add_episode(
+                        name=name,
+                        episode_body=content,
+                        source_description=final_source_description,
+                        source=episode_type,
+                        group_id=group_id,
+                        reference_time=effective_reference_time,
+                        entity_types=entity_types,
+                        uuid=uuid,
+                    )
+
+                    logger.info(
+                        f"Successfully processed episode {uuid} for group {group_id}"
+                    )
+
+                    # Wait after successful processing to avoid rate limits
+                    logger.info(f"Waiting {delay} seconds before next episode to avoid rate limits...")
+                    await asyncio.sleep(delay)
+                    logger.info(f"Rate limit wait completed for episode {uuid}")
+                    break  # Success - exit retry loop
+
+                except Exception as e:
+                    error_message = str(e)
+
+                    # Check if it's a rate limit error (429)
+                    if "429" in error_message or "Rate limit" in error_message:
+                        retry_count += 1
+                        if retry_count <= max_retries:
+                            # Exponential backoff: wait longer on each retry
+                            wait_time = delay * (2 ** (retry_count - 1))  # 20, 40, 80, 160, 320 seconds
+                            logger.warning(
+                                f"Rate limit hit for episode {uuid}. Retrying in {wait_time} seconds... "
+                                f"(attempt {retry_count}/{max_retries})"
+                            )
+                            await asyncio.sleep(wait_time)
+                        else:
+                            logger.error(
+                                f"Failed to process episode {uuid} after {max_retries} retries due to rate limits"
+                            )
+                            raise
                     else:
-                        final_source_description = f"source_url: {source_url}"
-
-                # Process the episode using the graphiti client
-                await self._graphiti_client.add_episode(
-                    name=name,
-                    episode_body=content,
-                    source_description=final_source_description,
-                    source=episode_type,
-                    group_id=group_id,
-                    reference_time=datetime.now(timezone.utc),
-                    entity_types=entity_types,
-                    uuid=uuid,
-                )
-
-                logger.info(
-                    f"Successfully processed episode {uuid} for group {group_id}"
-                )
-
-                await asyncio.sleep(20)
-                logger.info(f"Rate limit wait completed for episode {uuid}")
-
-            except Exception as e:
-                logger.error(
-                    f"Failed to process episode {uuid} for group {group_id}: {str(e)}"
-                )
-                raise
+                        # Non-rate-limit error - log and raise immediately
+                        logger.error(
+                            f"Failed to process episode {uuid} for group {group_id}: {error_message}"
+                        )
+                        raise
 
         # Use the existing add_episode_task method to queue the processing
         return await self.add_episode_task(group_id, process_episode)

@@ -1,6 +1,7 @@
 """MCP client connection manager."""
 
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Any, AsyncIterator
 
 from mcp import ClientSession
@@ -41,6 +42,7 @@ class MCPClient:
         source: str,
         source_description: str,
         source_url: str,
+        reference_time: datetime | None = None,
     ) -> dict[str, Any]:
         """
         Add an episode to Graphiti.
@@ -52,6 +54,7 @@ class MCPClient:
             source: Source type (e.g., "text", "message")
             source_description: Description of the source
             source_url: URL to the original source
+            reference_time: Optional timestamp when the episode occurred
 
         Returns:
             Response from add_memory tool
@@ -63,6 +66,10 @@ class MCPClient:
             "source_description": source_description,
             "source_url": source_url,
         }
+
+        # Add reference_time if provided
+        if reference_time:
+            arguments["reference_time"] = reference_time.isoformat()
 
         result = await session.call_tool("add_memory", arguments=arguments)
         return result

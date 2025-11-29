@@ -1,0 +1,16 @@
+{
+  "source_type": "slack",
+  "channel_id": "C092YD7AYD6",
+  "workspace_id": "E783C7HT4",
+  "data": [
+    {
+      "type": "standalone",
+      "message": {
+        "type": "message",
+        "user": "U07B7JYD89L",
+        "text": "Test message for entity extraction: John works at OpenAI in San Francisco.",
+        "ts": "1732588800.000000"
+      }
+    }
+  ]
+}

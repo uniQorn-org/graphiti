@@ -2,7 +2,7 @@
  * 検索結果表示コンポーネント
  */
 import React, { useState, useEffect } from 'react';
-import { SearchResult, EntityEdge, factsAPI } from '../services/api';
+import { SearchResult, EntityEdge, factsAPI, episodesAPI } from '../services/api';
 import FactEditor from './FactEditor';
 import { useToast } from './ToastContainer';
 
@@ -63,6 +63,45 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results }) => {
 
   const handleCancelEdit = () => {
     setEditingEdge(null);
+  };
+
+  const handleDeleteFact = async (edge: EntityEdge) => {
+    if (!window.confirm(`このFactを削除してよろしいですか？\n\n${edge.fact}`)) {
+      return;
+    }
+
+    try {
+      // EdgeはEpisodeに紐づいているため、citationsまたはepisodesから関連するepisode_uuidを取得して削除
+      let episodeUuid: string | null = null;
+
+      // 1. citationsから取得を試みる
+      if (edge.citations && edge.citations.length > 0) {
+        episodeUuid = edge.citations[0].episode_uuid;
+      }
+      // 2. citationsがない場合はepisodes配列から取得
+      else if (edge.episodes && edge.episodes.length > 0) {
+        episodeUuid = edge.episodes[0];
+      }
+
+      if (!episodeUuid) {
+        showToast(`削除に失敗しました: エピソード情報が見つかりません`, 'error');
+        return;
+      }
+
+      const response = await episodesAPI.deleteEpisode(episodeUuid);
+
+      if (response.status === 'deleted') {
+        // ローカル状態から削除
+        setLocalEdges((prev) => prev.filter((e) => e.uuid !== edge.uuid));
+        showToast(`Fact（およびエピソード）を削除しました！`, 'success');
+      } else {
+        showToast(`削除に失敗しました: ${response.message}`, 'error');
+      }
+    } catch (error: any) {
+      console.error('Fact削除エラー:', error);
+      const errorMsg = error.response?.data?.message || error.message || 'エラーが発生しました';
+      showToast(`削除に失敗しました: ${errorMsg}`, 'error');
+    }
   };
 
   return (
@@ -149,12 +188,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results }) => {
                     )}
                   </div>
 
-                  <button
-                    onClick={() => handleEditFact(edge)}
-                    style={styles.editButton}
-                  >
-                    ✏️ 修正
-                  </button>
+                  <div style={styles.buttonContainer}>
+                    <button
+                      onClick={() => handleEditFact(edge)}
+                      style={styles.editButton}
+                    >
+                      ✏️ 修正
+                    </button>
+                    <button
+                      onClick={() => handleDeleteFact(edge)}
+                      style={styles.deleteButton}
+                    >
+                      🗑️ 削除
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -318,9 +365,23 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '12px',
     color: '#666',
   },
+  buttonContainer: {
+    display: 'flex',
+    gap: '8px',
+    marginTop: '4px',
+  },
   editButton: {
     padding: '6px 12px',
     backgroundColor: '#4caf50',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '13px',
+  },
+  deleteButton: {
+    padding: '6px 12px',
+    backgroundColor: '#f44336',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
