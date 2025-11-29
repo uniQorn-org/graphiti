@@ -22,6 +22,7 @@ from mcp.server.fastmcp import FastMCP
 from models.citation_types import (CitationChainResponse,
                                    FactSearchWithCitationsResponse,
                                    FactWithCitations)
+from models.episode_types import EpisodeProcessingConfig
 from models.response_types import (EpisodeSearchResponse, ErrorResponse,
                                    FactSearchResponse, NodeResult,
                                    NodeSearchResponse, StatusResponse,
@@ -256,7 +257,8 @@ async def add_memory(
                 )
                 parsed_reference_time = None
 
-        await queue_service.add_episode(
+        # Create episode processing configuration
+        episode_config = EpisodeProcessingConfig(
             group_id=effective_group_id,
             name=name,
             content=episode_body,
@@ -264,9 +266,11 @@ async def add_memory(
             source_url=source_url,
             episode_type=episode_type,
             entity_types=graphiti_service.entity_types,
-            uuid=uuid or None,  # Ensure None is passed if uuid is None
+            uuid=uuid or None,
             reference_time=parsed_reference_time,
         )
+
+        await queue_service.add_episode(episode_config)
 
         return SuccessResponse(
             message=f"Episode '{name}' queued for processing in group '{effective_group_id}'"
