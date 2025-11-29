@@ -61,11 +61,6 @@ async def initialize_server(mcp_instance) -> ServerConfig:
 
     # Transport arguments
     parser.add_argument(
-        "--transport",
-        choices=["sse", "stdio", "http"],
-        help="Transport to use: http (recommended, default), stdio (standard I/O), or sse (deprecated)",
-    )
-    parser.add_argument(
         "--host",
         help="Host to bind the MCP server to",
     )
@@ -141,7 +136,7 @@ async def initialize_server(mcp_instance) -> ServerConfig:
     logger.info(f"  - Embedder: {config.embedder.provider} / {config.embedder.model}")
     logger.info(f"  - Database: {config.database.provider}")
     logger.info(f"  - Group ID: {config.graphiti.group_id}")
-    logger.info(f"  - Transport: {config.server.transport}")
+    logger.info("  - Transport: http")
 
     # Log graphiti-core version
     try:
@@ -200,54 +195,39 @@ async def run_mcp_server(mcp_instance):
         mcp_instance: The FastMCP instance to run
     """
     # Initialize the server
-    mcp_config = await initialize_server(mcp_instance)
+    await initialize_server(mcp_instance)
 
-    # Run the server with configured transport
-    logger.info(f"Starting MCP server with transport: {mcp_config.transport}")
-    if mcp_config.transport == "stdio":
-        await mcp_instance.run_stdio_async()
-    elif mcp_config.transport == "sse":
-        logger.info(
-            f"Running MCP server with SSE transport on {mcp_instance.settings.host}:{mcp_instance.settings.port}"
-        )
-        logger.info(
-            f"Access the server at: http://{mcp_instance.settings.host}:{mcp_instance.settings.port}/sse"
-        )
-        await mcp_instance.run_sse_async()
-    elif mcp_config.transport == "http":
-        # Use localhost for display if binding to 0.0.0.0
-        display_host = (
-            "localhost"
-            if mcp_instance.settings.host == "0.0.0.0"
-            else mcp_instance.settings.host
-        )
-        logger.info(
-            f"Running MCP server with streamable HTTP transport on {mcp_instance.settings.host}:{mcp_instance.settings.port}"
-        )
-        logger.info("=" * 60)
-        logger.info("MCP Server Access Information:")
-        logger.info(f"  Base URL: http://{display_host}:{mcp_instance.settings.port}/")
-        logger.info(
-            f"  MCP Endpoint: http://{display_host}:{mcp_instance.settings.port}/mcp/"
-        )
-        logger.info("  Transport: HTTP (streamable)")
-        logger.info("=" * 60)
-        logger.info("For MCP clients, connect to the /mcp/ endpoint above")
+    # Use localhost for display if binding to 0.0.0.0
+    display_host = (
+        "localhost"
+        if mcp_instance.settings.host == "0.0.0.0"
+        else mcp_instance.settings.host
+    )
 
-        # Configure uvicorn logging to match our format
-        configure_uvicorn_logging()
+    logger.info("Starting MCP server with HTTP transport")
+    logger.info(
+        f"Running MCP server with streamable HTTP transport on {mcp_instance.settings.host}:{mcp_instance.settings.port}"
+    )
+    logger.info("=" * 60)
+    logger.info("MCP Server Access Information:")
+    logger.info(f"  Base URL: http://{display_host}:{mcp_instance.settings.port}/")
+    logger.info(
+        f"  MCP Endpoint: http://{display_host}:{mcp_instance.settings.port}/mcp/"
+    )
+    logger.info("  Transport: HTTP (streamable)")
+    logger.info("=" * 60)
+    logger.info("For MCP clients, connect to the /mcp/ endpoint above")
 
-        # Add CORS middleware to the underlying FastAPI app
-        # Use custom middleware to add CORS headers to all responses
-        try:
-            app = mcp_instance.streamable_http_app()
-            app.add_middleware(CORSHeaderMiddleware)
-            logger.info("CORS middleware enabled for cross-origin requests")
-        except Exception as e:
-            logger.warning(f"Could not add CORS middleware: {e}")
+    # Configure uvicorn logging to match our format
+    configure_uvicorn_logging()
 
-        await mcp_instance.run_streamable_http_async()
-    else:
-        raise ValueError(
-            f'Unsupported transport: {mcp_config.transport}. Use "sse", "stdio", or "http"'
-        )
+    # Add CORS middleware to the underlying FastAPI app
+    # Use custom middleware to add CORS headers to all responses
+    try:
+        app = mcp_instance.streamable_http_app()
+        app.add_middleware(CORSHeaderMiddleware)
+        logger.info("CORS middleware enabled for cross-origin requests")
+    except Exception as e:
+        logger.warning(f"Could not add CORS middleware: {e}")
+
+    await mcp_instance.run_streamable_http_async()

@@ -97,7 +97,7 @@ class ServerConfig(BaseModel):
 
     transport: str = Field(
         default="http",
-        description="Transport type: http (default, recommended), stdio, or sse (deprecated)",
+        description="Transport type: http (only supported option for Docker environment)",
     )
     host: str = Field(default="0.0.0.0", description="Server host")
     port: int = Field(default=8000, description="Server port")
@@ -291,10 +291,6 @@ class GraphitiConfig(BaseSettings):
 
     def apply_cli_overrides(self, args) -> None:
         """Apply CLI argument overrides to configuration."""
-        # Override server settings
-        if hasattr(args, "transport") and args.transport:
-            self.server.transport = args.transport
-
         # Override LLM settings
         if hasattr(args, "llm_provider") and args.llm_provider:
             self.llm.provider = args.llm_provider

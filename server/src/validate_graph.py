@@ -257,7 +257,7 @@ def _print_improvement_suggestions(stats: dict[str, Any]) -> None:
     """Print improvement suggestions based on graph statistics."""
     # Early return patterns - handle critical issues first
     if stats.get("episode_count", 0) == 0:
-        print("  - No data has been ingested. Run load_slack_data.py")
+        print("  - No data has been ingested. Run 'make demo' or ingest data manually")
         return
 
     if stats.get("node_count", 0) == 0:

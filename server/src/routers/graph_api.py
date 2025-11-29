@@ -12,6 +12,7 @@ from models.api_types import (APIErrorResponse, EpisodeCreateRequest,
                               EpisodeCreateResponse, FactDeleteResponse,
                               FactUpdateRequest, FactUpdateResponse,
                               GraphSearchRequest, GraphSearchResponse)
+from models.episode_types import EpisodeProcessingConfig
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from utils.formatting import format_fact_result
@@ -55,8 +56,8 @@ async def create_episode_api(
         # Convert source string to EpisodeType enum
         episode_type = normalize_episode_type(episode_request.source)
 
-        # Submit to queue service for async processing
-        await queue_service.add_episode(
+        # Create episode processing config
+        episode_config = EpisodeProcessingConfig(
             group_id=effective_group_id,
             name=episode_request.name,
             content=episode_request.content,
@@ -64,8 +65,11 @@ async def create_episode_api(
             source_url=episode_request.source_url,
             episode_type=episode_type,
             entity_types=graphiti_service.entity_types,
-            uuid=episode_request.uuid or None,
+            uuid=episode_request.uuid,
         )
+
+        # Submit to queue service for async processing
+        await queue_service.add_episode(episode_config)
 
         response = EpisodeCreateResponse(
             status="success",
