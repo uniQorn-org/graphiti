@@ -187,10 +187,21 @@ make clean-cache   # Pythonキャッシュをクリア
 
 ## 📚 詳細なドキュメント
 
+### アーキテクチャとデータモデル
+
+- **[METADATA_SPECIFICATION.md](docs/METADATA_SPECIFICATION.md)** - メタデータ仕様の完全ガイド（Episode/Node/Edge/Citation）
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - システムアーキテクチャの詳細（3層分離構造、通信フロー）
+- **[DATA_INGESTION.md](docs/DATA_INGESTION.md)** - データ取り込みガイド（GitHub/Slack/Zoom、カスタムデータソース）
+
+### セットアップとトラブルシューティング
+
 - **[SETUP.md](SETUP.md)** - 詳細なセットアップガイド、トラブルシューティング
 - **[PROXY_SETUP.md](docs/PROXY_SETUP.md)** - 企業プロキシの設定方法
 - **[CC_THROTTLE_SETUP.md](docs/CC_THROTTLE_SETUP.md)** - cc-throttle レート制限プロキシの設定方法（429エラー対策）
 - **[LOCAL_LLM_SETUP.md](docs/LOCAL_LLM_SETUP.md)** - LM Studioを使用したローカルLLM設定（レート制限回避）
+
+### Graphitiについて
+
 - **[Graphiti解説 (日本語)](docs/graphiti.md)** - Graphitiの仕組みと使い方
 - **[REST API仕様](server/docs/REST_API.md)** - API仕様とエンドポイント
 - **[Graphiti公式ドキュメント](https://help.getzep.com/graphiti/)** - Graphiti本体のドキュメント
@@ -445,6 +456,17 @@ docker compose logs -f
 docker compose logs -f graphiti-mcp
 docker compose logs -f neo4j
 ```
+
+## コード品質
+
+このプロジェクトは包括的なリファクタリング（Phase 1-12）を経て、高品質なコードベースを維持しています：
+
+- ✅ **可読性**: 日本語コメント→英語、ネスト深度削減（6レベル→2レベル）
+- ✅ **保守性**: 長いメソッド分割（274行→70行）、モジュール化
+- ✅ **型安全性**: Pydanticデータクラス、パラメータ削減（9個→1個）
+- ✅ **テスト済み**: Docker環境で全機能動作確認済み
+
+詳細は[docs/](docs/)ディレクトリの技術ドキュメントを参照してください。
 
 ## コントリビューション
 
