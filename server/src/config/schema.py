@@ -73,7 +73,11 @@ class YamlSettingsSource(PydanticBaseSettingsSource):
         return value
 
     def get_field_value(self, field_name: str, field_info: Any) -> Any:
-        """Get field value from YAML config."""
+        """Get field value from YAML config.
+
+        This method is required by PydanticBaseSettingsSource abstract class.
+        We use __call__ instead for loading configuration, so this returns None.
+        """
         return None
 
     def __call__(self) -> dict[str, Any]:

@@ -8,6 +8,7 @@ from models.response_types import (ErrorResponse, FactSearchResponse,
                                    NodeResult, NodeSearchResponse)
 from services.service_container import ServiceContainer
 from utils.formatting import format_fact_result
+from utils.graphiti_operations import resolve_group_ids, create_node_search_filters
 
 logger = logging.getLogger(__name__)
 
@@ -35,19 +36,11 @@ async def search_nodes(
     try:
         client = await graphiti_service.get_client()
 
-        # Use the provided group_ids or fall back to the default from config if none provided
-        effective_group_ids = (
-            group_ids
-            if group_ids is not None
-            else [config.graphiti.group_id]
-            if config.graphiti.group_id
-            else []
-        )
+        # Resolve group IDs using shared utility
+        effective_group_ids = resolve_group_ids(group_ids, config)
 
-        # Create search filters
-        search_filters = SearchFilters(
-            node_labels=entity_types,
-        )
+        # Create search filters using shared utility
+        search_filters = create_node_search_filters(entity_types)
 
         # Use the search_ method with node search config
         results = await client.search_(
@@ -119,14 +112,8 @@ async def search_memory_facts(
 
         client = await graphiti_service.get_client()
 
-        # Use the provided group_ids or fall back to the default from config if none provided
-        effective_group_ids = (
-            group_ids
-            if group_ids is not None
-            else [config.graphiti.group_id]
-            if config.graphiti.group_id
-            else []
-        )
+        # Resolve group IDs using shared utility
+        effective_group_ids = resolve_group_ids(group_ids, config)
 
         relevant_edges = await client.search(
             group_ids=effective_group_ids,

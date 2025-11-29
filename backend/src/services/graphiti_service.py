@@ -26,13 +26,7 @@ if str(server_src_path) not in sys.path:
 
 # Import shared datetime utilities
 from shared.utils.datetime_utils import convert_neo4j_datetime
-
-try:
-    from services.citation_service import get_episode_citations
-except ImportError:
-    # Fallback if import fails
-    async def get_episode_citations(driver, entity_uuid, entity_type="edge"):
-        return []
+from services.citation_service import get_episode_citations
 
 logger = logging.getLogger(__name__)
 

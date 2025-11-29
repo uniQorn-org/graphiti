@@ -43,14 +43,9 @@ async def graph_search_endpoint(request):
         "center_node_uuid": "optional-uuid"
     }
     """
+    # CORS headers are handled by CORSHeaderMiddleware
     if request.method == "OPTIONS":
-        response = JSONResponse({"status": "ok"}, status_code=200)
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers[
-            "Access-Control-Allow-Methods"
-        ] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-        return response
+        return JSONResponse({"status": "ok"}, status_code=200)
 
     graphiti_service = ServiceContainer.get_graphiti_service()
     config = ServiceContainer.get_config()
@@ -62,14 +57,9 @@ async def delete_episode_endpoint(request):
 
     DELETE /graph/episodes/{uuid}
     """
+    # CORS headers are handled by CORSHeaderMiddleware
     if request.method == "OPTIONS":
-        response = JSONResponse({"status": "ok"}, status_code=200)
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers[
-            "Access-Control-Allow-Methods"
-        ] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-        return response
+        return JSONResponse({"status": "ok"}, status_code=200)
 
     graphiti_service = ServiceContainer.get_graphiti_service()
     return await delete_episode_api(request, graphiti_service)
@@ -86,14 +76,9 @@ async def update_fact_endpoint(request):
         "attributes": {"key": "value"}
     }
     """
+    # CORS headers are handled by CORSHeaderMiddleware
     if request.method == "OPTIONS":
-        response = JSONResponse({"status": "ok"}, status_code=200)
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers[
-            "Access-Control-Allow-Methods"
-        ] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-        return response
+        return JSONResponse({"status": "ok"}, status_code=200)
 
     graphiti_service = ServiceContainer.get_graphiti_service()
     return await update_fact_api(request, graphiti_service)

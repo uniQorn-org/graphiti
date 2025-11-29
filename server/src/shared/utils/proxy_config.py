@@ -15,6 +15,22 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
+def _mask_proxy_credentials(proxy_url: str) -> str:
+    """Mask credentials in proxy URL for safe logging.
+
+    Args:
+        proxy_url: Proxy URL potentially containing credentials
+
+    Returns:
+        Proxy URL with credentials removed (everything after @ symbol)
+
+    Example:
+        >>> _mask_proxy_credentials("http://user:pass@proxy.com:8080")
+        "proxy.com:8080"
+    """
+    return proxy_url.split('@')[-1] if '@' in proxy_url else proxy_url
+
+
 def get_proxy_config() -> dict[str, str] | None:
     """Get proxy configuration from environment variables.
 
@@ -55,7 +71,7 @@ def get_proxy_config() -> dict[str, str] | None:
                 "OPENAI_PROXY_USERNAME and OPENAI_PROXY_PASSWORD are set but proxy URL format is invalid"
             )
 
-    logger.info(f"Configuring OpenAI API proxy: {proxy_url.split('@')[-1]}")  # Log without credentials
+    logger.info(f"Configuring OpenAI API proxy: {_mask_proxy_credentials(proxy_url)}")
 
     # Return proxy configuration for both HTTP and HTTPS
     return {
@@ -101,7 +117,7 @@ def create_httpx_client(timeout: float = 60.0) -> httpx.Client:
         # Use the proxy URL (httpx 0.27.0+ uses 'proxy' parameter, not 'proxies')
         proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
         client_kwargs["proxy"] = proxy_url
-        logger.debug(f"Creating httpx client with proxy: {proxy_url.split('@')[-1]}")
+        logger.debug(f"Creating httpx client with proxy: {_mask_proxy_credentials(proxy_url)}")
     else:
         logger.debug("Creating httpx client without proxy")
 
@@ -133,9 +149,9 @@ def create_async_httpx_client(timeout: float = 60.0) -> httpx.AsyncClient:
 
     if proxy_config:
         # Use the proxy URL (httpx 0.27.0+ uses 'proxy' parameter, not 'proxies')
-        proxy_url = proxy_config.get("https://", proxy_url.get("http://"))
+        proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
         client_kwargs["proxy"] = proxy_url
-        logger.debug(f"Creating async httpx client with proxy: {proxy_url.split('@')[-1]}")
+        logger.debug(f"Creating async httpx client with proxy: {_mask_proxy_credentials(proxy_url)}")
     else:
         logger.debug("Creating async httpx client without proxy")
 
@@ -159,9 +175,7 @@ def setup_proxy_environment() -> bool:
     os.environ["HTTP_PROXY"] = proxy_url
     os.environ["HTTPS_PROXY"] = proxy_url
 
-    # Log without credentials
-    safe_url = proxy_url.split('@')[-1] if '@' in proxy_url else proxy_url
-    logger.info(f"✓ Proxy configured for SDKs: {safe_url}")
+    logger.info(f"✓ Proxy configured for SDKs: {_mask_proxy_credentials(proxy_url)}")
 
     return True
 
@@ -175,14 +189,12 @@ def log_proxy_status():
     if proxy_use != "TRUE":
         logger.info("✓ Proxy disabled (PROXY_USE=FALSE or not set)")
         if proxy_url:
-            logger.info(f"  ℹ️  OPENAI_PROXY is set to: {proxy_url.split('@')[-1]} but not used")
+            logger.info(f"  ℹ️  OPENAI_PROXY is set to: {_mask_proxy_credentials(proxy_url)} but not used")
         return
 
     if proxy_url:
-        # Mask credentials in log
-        safe_url = proxy_url.split("@")[-1] if "@" in proxy_url else proxy_url
         logger.info(f"✓ OpenAI API proxy enabled (PROXY_USE=TRUE)")
-        logger.info(f"✓ Proxy URL: {safe_url}")
+        logger.info(f"✓ Proxy URL: {_mask_proxy_credentials(proxy_url)}")
 
         if os.getenv("OPENAI_PROXY_USERNAME"):
             logger.info("✓ Proxy authentication enabled")

@@ -4,14 +4,17 @@ This client handles the differences in API parameters for reasoning models like
 gpt-5, o1, o3, and o4 series, which use max_completion_tokens instead of max_tokens.
 """
 
+import json
 import logging
 import os
+import traceback
 from typing import Any
 
 import httpx
 from graphiti_core.llm_client import LLMClient
 from graphiti_core.llm_client.config import LLMConfig
 from openai import AsyncOpenAI
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -114,9 +117,6 @@ class GPT5Client(LLMClient):
             if response_model:
                 # Use regular chat completion with response_format for proxy compatibility
                 # Avoid beta.chat.completions.parse() which is not supported by corporate proxy
-                import json
-                from pydantic import ValidationError
-
                 # Add response_format to request params for structured output
                 # Ensure schema has additionalProperties: false for corporate proxy compatibility
                 schema = response_model.model_json_schema()
@@ -173,7 +173,6 @@ class GPT5Client(LLMClient):
             logger.error(f"Error calling OpenAI API: {e}")
             logger.error(f"Exception type: {type(e).__name__}")
             logger.error(f"Full exception details: {repr(e)}")
-            import traceback
             logger.error(f"Traceback:\n{traceback.format_exc()}")
             raise
 

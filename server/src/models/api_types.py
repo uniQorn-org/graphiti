@@ -78,24 +78,6 @@ class FactDeleteResponse(BaseModel):
 
 
 # ============================================================================
-# Node Search Request/Response Types
-# ============================================================================
-
-
-class NodeSearchRequest(BaseModel):
-    """Request model for node search."""
-
-    query: str = Field(..., description="Search query string")
-    group_ids: list[str] | None = Field(
-        None, description="Optional list of group IDs to filter"
-    )
-    max_nodes: int = Field(10, ge=1, le=100, description="Maximum number of nodes")
-    entity_types: list[str] | None = Field(
-        None, description="Optional entity type filters"
-    )
-
-
-# ============================================================================
 # Episode Request/Response Types
 # ============================================================================
 

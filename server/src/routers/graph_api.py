@@ -15,17 +15,11 @@ from models.api_types import (APIErrorResponse, EpisodeCreateRequest,
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from utils.formatting import format_fact_result
+from utils.graphiti_operations import (normalize_episode_type,
+                                        resolve_group_ids,
+                                        create_node_search_filters)
 
 logger = logging.getLogger(__name__)
-
-
-def create_cors_response(content: Dict[str, Any], status_code: int = 200) -> JSONResponse:
-    """Create a JSONResponse with CORS headers."""
-    response = JSONResponse(content, status_code=status_code)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
 
 
 # ============================================================================
@@ -59,15 +53,7 @@ async def create_episode_api(
         effective_group_id = episode_request.group_id or config.graphiti.group_id
 
         # Convert source string to EpisodeType enum
-        episode_type = EpisodeType.text  # Default
-        if episode_request.source:
-            try:
-                episode_type = EpisodeType[episode_request.source.lower()]
-            except (KeyError, AttributeError):
-                logger.warning(
-                    f"Unknown source type '{episode_request.source}', using 'text' as default"
-                )
-                episode_type = EpisodeType.text
+        episode_type = normalize_episode_type(episode_request.source)
 
         # Submit to queue service for async processing
         await queue_service.add_episode(
@@ -125,14 +111,8 @@ async def search_graph_api(request: Request, graphiti_service, config) -> JSONRe
 
         client = await graphiti_service.get_client()
 
-        # Use provided group_ids or fall back to default
-        effective_group_ids = (
-            search_request.group_ids
-            if search_request.group_ids is not None
-            else [config.graphiti.group_id]
-            if config.graphiti.group_id
-            else []
-        )
+        # Resolve group IDs using shared utility
+        effective_group_ids = resolve_group_ids(search_request.group_ids, config)
 
         results = []
 
@@ -152,10 +132,8 @@ async def search_graph_api(request: Request, graphiti_service, config) -> JSONRe
             ])
 
         elif search_request.search_type == "nodes":
-            # Search for nodes (EntityNodes)
-            search_filters = SearchFilters(
-                node_labels=search_request.entity_types,
-            )
+            # Create search filters using shared utility
+            search_filters = create_node_search_filters(search_request.entity_types)
 
             search_results = await client.search_(
                 query=search_request.query,
@@ -230,7 +208,7 @@ async def search_graph_api(request: Request, graphiti_service, config) -> JSONRe
             count=len(results),
         )
 
-        return create_cors_response(response.model_dump())
+        return JSONResponse(response.model_dump())
 
     except Exception as e:
         logger.error(f"Error searching graph: {e}")
@@ -375,11 +353,11 @@ async def update_fact_api(request: Request, graphiti_service) -> JSONResponse:
             new_edge=new_edge_with_citations,
         )
 
-        return create_cors_response(response.model_dump())
+        return JSONResponse(response.model_dump())
 
     except Exception as e:
         logger.error(f"Error updating fact: {e}")
-        return create_cors_response(
+        return JSONResponse(
             APIErrorResponse(error=str(e), status_code=500).model_dump(),
             status_code=500,
         )

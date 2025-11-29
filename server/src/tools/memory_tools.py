@@ -12,6 +12,7 @@ from models.response_types import (EpisodeSearchResponse, ErrorResponse,
                                    SuccessResponse)
 from services.service_container import ServiceContainer
 from utils.formatting import format_fact_result
+from utils.graphiti_operations import normalize_episode_type
 
 logger = logging.getLogger(__name__)
 
@@ -78,17 +79,8 @@ async def add_memory(
         # Use the provided group_id or fall back to the default from config
         effective_group_id = group_id or config.graphiti.group_id
 
-        # Try to parse the source as an EpisodeType enum, with fallback to text
-        episode_type = EpisodeType.text  # Default
-        if source:
-            try:
-                episode_type = EpisodeType[source.lower()]
-            except (KeyError, AttributeError):
-                # If the source doesn't match any enum value, use text as default
-                logger.warning(
-                    f"Unknown source type '{source}', using 'text' as default"
-                )
-                episode_type = EpisodeType.text
+        # Convert source string to EpisodeType enum
+        episode_type = normalize_episode_type(source)
 
         # Parse reference_time if provided
         parsed_reference_time = None
