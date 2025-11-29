@@ -68,26 +68,26 @@ class LangChainService:
                 streaming=False
             )
 
-        # プロンプトテンプレート
+        # Prompt template
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 (
                     "system",
-                    """あなたは社内の知識ベースを使って質問に答えるアシスタントです。
+                    """You are an assistant that answers questions using the company's knowledge base.
 
-以下のナレッジグラフから取得した情報を使って、ユーザーの質問に答えてください。
+Please answer the user's question using the information retrieved from the knowledge graph below.
 
-## 検索結果
+## Search Results
 
 {search_results}
 
-## 指示
+## Instructions
 
-1. 上記の「関連する事実」に記載されている情報を必ず活用して回答してください
-2. 検索結果に「関連する情報が見つかりませんでした。」と表示されている場合のみ、「情報が見つかりませんでした」と答えてください
-3. それ以外の場合は、検索結果の事実を使って具体的に答えてください
-4. 回答は日本語で、わかりやすく説明してください
-5. 検索結果の事実を引用する際は、内容をそのまま使用してください""",
+1. You must use the information listed in the "Related Facts" above to formulate your answer
+2. Only respond with "No information found" if the search results display "No relevant information found."
+3. Otherwise, answer specifically using the facts from the search results
+4. Provide your answer in Japanese, explaining clearly and understandably
+5. When quoting facts from the search results, use the content as-is""",
                 ),
                 MessagesPlaceholder(variable_name="history"),
                 ("human", "{question}"),

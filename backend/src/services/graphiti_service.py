@@ -91,7 +91,7 @@ class GraphitiService:
                         )
                     )
             else:
-                # SearchResultsオブジェクト
+                # SearchResults object
                 if hasattr(results, "edges"):
                     for edge in results.edges:
                         edge_uuids.append(edge.uuid)

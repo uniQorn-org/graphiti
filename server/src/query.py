@@ -5,7 +5,7 @@ import asyncio
 import json
 
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client  # HTTP 接続用
+from mcp.client.streamable_http import streamablehttp_client  # HTTP connection
 
 
 async def main():
@@ -14,7 +14,7 @@ async def main():
         "--query",
         type=str,
         required=True,
-        help="検索クエリ文字列。",
+        help="Search query string.",
     )
     args = parser.parse_args()
     async with streamablehttp_client("http://localhost:8001/mcp/") as (read, write, _):

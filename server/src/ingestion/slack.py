@@ -15,6 +15,12 @@ import requests
 
 from .base import BaseIngester
 from .utils import build_slack_url
+from shared.constants import (
+    SLACK_CONVERSATIONS_API_URL,
+    SLACK_USERS_API_URL,
+    SLACK_FETCH_LIMIT,
+    MAX_CHARS_SLACK,
+)
 
 
 class SlackIngester(BaseIngester):
@@ -65,7 +71,7 @@ class SlackIngester(BaseIngester):
         Returns:
             List of message dictionaries
         """
-        url = "https://slack.com/api/conversations.history"
+        url = SLACK_CONVERSATIONS_API_URL
         headers = {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
@@ -75,7 +81,7 @@ class SlackIngester(BaseIngester):
 
         params = {
             "channel": self.channel_id,
-            "limit": 100,
+            "limit": SLACK_FETCH_LIMIT,
         }
         if oldest:
             params["oldest"] = str(oldest)
@@ -124,7 +130,7 @@ class SlackIngester(BaseIngester):
         if user_id in self.user_cache:
             return self.user_cache[user_id]
 
-        url = "https://slack.com/api/users.info"
+        url = SLACK_USERS_API_URL
         headers = {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
@@ -239,7 +245,7 @@ class SlackIngester(BaseIngester):
 
             # Translate message
             if text:
-                text = self.translate_text(text, max_chars=1000)
+                text = self.translate_text(text, max_chars=MAX_CHARS_SLACK)
 
             conversation_lines.append(f"{user_name}: {text}")
 
@@ -292,7 +298,7 @@ class SlackIngester(BaseIngester):
 
         # Translate message
         if text:
-            text = self.translate_text(text, max_chars=1000)
+            text = self.translate_text(text, max_chars=MAX_CHARS_SLACK)
 
         episode_body = f"{user_name}: {text}"
         episode_name = f"slack:message:{self.channel_id}:{ts}"

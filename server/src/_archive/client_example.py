@@ -5,7 +5,7 @@ import json
 from typing import Any, Dict
 
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client  # HTTP 接続用
+from mcp.client.streamable_http import streamablehttp_client  # HTTP connection
 
 
 async def call_tool(

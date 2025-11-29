@@ -9,15 +9,15 @@ async def analyze_relations():
         "bolt://localhost:7687", auth=("neo4j", "uniqorns")
     )
     async with driver.session() as session:
-        print("=== 関係性の詳細分析 ===\n")
+        print("=== Detailed Relationship Analysis ===\n")
 
         result = await session.run(
             "MATCH ()-[r:RELATES_TO]->() RETURN count(r) as count"
         )
         total = (await result.single())["count"]
-        print(f"全RELATES_TO関係数: {total}")
+        print(f"Total RELATES_TO relationships: {total}")
 
-        print("\n関係タイプ（r.name）の分布:")
+        print("\nRelationship type (r.name) distribution:")
         result = await session.run("""
             MATCH ()-[r:RELATES_TO]->()
             RETURN r.name as rel_type, count(*) as count
@@ -31,21 +31,21 @@ async def analyze_relations():
             rel_type = record["rel_type"]
             count = record["count"]
             if rel_type:
-                print(f"  {rel_type}: {count}回")
+                print(f"  {rel_type}: {count} times")
                 named_count += count
             else:
-                print(f"  （NULL/未指定）: {count}回")
+                print(f"  (NULL/unspecified): {count} times")
                 generic_count += count
 
         if total > 0:
             print(
-                f"\n具体的な名前あり: {named_count}/{total} ({named_count / total * 100:.1f}%)"
+                f"\nWith specific names: {named_count}/{total} ({named_count / total * 100:.1f}%)"
             )
             print(
-                f"未分類: {generic_count}/{total} ({generic_count / total * 100:.1f}%)"
+                f"Unclassified: {generic_count}/{total} ({generic_count / total * 100:.1f}%)"
             )
 
-        print("\n\nサンプルエッジ（具体的な名前あり）:")
+        print("\n\nSample edges (with specific names):")
         result = await session.run("""
             MATCH (s)-[r:RELATES_TO]->(t)
             WHERE r.name IS NOT NULL
@@ -60,11 +60,11 @@ async def analyze_relations():
             fact = record["fact"]
             print(f"\n  {source} --[{rel_name}]--> {target}")
             if fact:
-                print(f"    説明: {fact[:100]}...")
+                print(f"    Description: {fact[:100]}...")
             count += 1
 
         if count == 0:
-            print("  （具体的な名前を持つエッジが見つかりませんでした）")
+            print("  (No edges with specific names found)")
 
     await driver.close()
 

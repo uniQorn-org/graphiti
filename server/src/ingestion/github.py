@@ -6,6 +6,7 @@ from github import Github
 
 from .base import BaseIngester
 from .utils import build_github_issue_url
+from shared.constants import MAX_CHARS_TITLE, MAX_CHARS_BODY, MAX_CHARS_COMMENT
 
 
 class GitHubIngester(BaseIngester):
@@ -115,8 +116,8 @@ class GitHubIngester(BaseIngester):
             Episode dictionary
         """
         # Translate title and body
-        title = self.translate_text(data["title"], max_chars=500)
-        body = self.translate_text(data["body"], max_chars=5000)
+        title = self.translate_text(data["title"], max_chars=MAX_CHARS_TITLE)
+        body = self.translate_text(data["body"], max_chars=MAX_CHARS_BODY)
 
         # Build episode body
         episode_body = f"# {title}\n\n{body}"
@@ -125,7 +126,7 @@ class GitHubIngester(BaseIngester):
         if data["comments"]:
             episode_body += "\n\n## Comments\n"
             for comment in data["comments"]:
-                comment_body = self.translate_text(comment["body"], max_chars=2000)
+                comment_body = self.translate_text(comment["body"], max_chars=MAX_CHARS_COMMENT)
                 episode_body += (
                     f"\n**{comment['user']}** at {comment['created_at']}:\n{comment_body}\n"
                 )

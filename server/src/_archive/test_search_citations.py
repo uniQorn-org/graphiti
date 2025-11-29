@@ -60,7 +60,7 @@ async def test_search_with_citations():
 
             result = await session.call_tool(
                 "search_with_citations",
-                arguments={"query": "API フロントエンド", "max_facts": 3},
+                arguments={"query": "API frontend", "max_facts": 3},
             )
 
             # Extract content from CallToolResult
