@@ -1,13 +1,15 @@
 """
-Graphitiサービス - ナレッジグラフ管理
+Graphiti service - Knowledge graph management
 """
 import logging
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 from datetime import datetime
+
 from graphiti_core import Graphiti
 from graphiti_core.nodes import EpisodeType
+
 from ..models.schemas import (
     EntityNode,
     EntityEdge,
@@ -17,11 +19,14 @@ from ..models.schemas import (
     CitationInfo,
 )
 
-# Import citation service from MCP server
-# Add the server/src directory to the path to import citation_service
+# Import shared utilities from MCP server
+# Add the server/src directory to the path
 server_src_path = Path(__file__).parent.parent.parent.parent / "server" / "src"
 if str(server_src_path) not in sys.path:
     sys.path.insert(0, str(server_src_path))
+
+# Import shared datetime utilities
+from shared.utils.datetime_utils import convert_neo4j_datetime
 
 try:
     from services.citation_service import get_episode_citations
@@ -63,18 +68,10 @@ class GraphitiService:
             # Graphitiで検索 (limitパラメータは使用しない)
             results = await self.client.search(query)
 
-            # 結果を変換
+            # Convert results
             nodes = []
             edges = []
             edge_uuids = []
-
-            # Neo4jのDateTimeをPythonのdatetimeに変換
-            def convert_neo4j_datetime(dt):
-                if dt is None:
-                    return None
-                if hasattr(dt, 'to_native'):
-                    return dt.to_native()
-                return dt
 
             if isinstance(results, list):
                 # エッジのリスト
@@ -227,15 +224,7 @@ class GraphitiService:
                 record = records[0]
                 edge_data = dict(record["e"])
 
-                # Neo4jのDateTimeをPythonのdatetimeに変換
-                def convert_neo4j_datetime(dt):
-                    if dt is None:
-                        return None
-                    # Neo4j DateTimeオブジェクトはto_native()メソッドで変換可能
-                    if hasattr(dt, 'to_native'):
-                        return dt.to_native()
-                    return dt
-
+                # Convert Neo4j DateTime to Python datetime (using shared utility)
                 updated_edge = EntityEdge(
                     uuid=edge_data.get("uuid"),
                     source_node_uuid=edge_data.get("source_node_uuid", ""),

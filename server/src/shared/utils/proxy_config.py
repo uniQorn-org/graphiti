@@ -2,18 +2,20 @@
 
 This module provides utilities for configuring HTTP proxies for OpenAI API calls,
 which is useful when running behind corporate firewalls or for testing purposes.
+
+Consolidated from server/src/utils/proxy_utils.py and backend/src/utils/proxy_utils.py
+to eliminate code duplication.
 """
 
 import logging
 import os
-from typing import Dict, Optional
 
 import httpx
 
 logger = logging.getLogger(__name__)
 
 
-def get_proxy_config() -> Optional[Dict[str, str]]:
+def get_proxy_config() -> dict[str, str] | None:
     """Get proxy configuration from environment variables.
 
     Reads proxy settings from the following environment variables:
@@ -62,7 +64,7 @@ def get_proxy_config() -> Optional[Dict[str, str]]:
     }
 
 
-def get_no_proxy_hosts() -> Optional[str]:
+def get_no_proxy_hosts() -> str | None:
     """Get NO_PROXY environment variable value.
 
     Returns:
@@ -104,6 +106,64 @@ def create_httpx_client(timeout: float = 60.0) -> httpx.Client:
         logger.debug("Creating httpx client without proxy")
 
     return httpx.Client(**client_kwargs)
+
+
+def create_async_httpx_client(timeout: float = 60.0) -> httpx.AsyncClient:
+    """Create an async httpx.AsyncClient with proxy configuration from environment variables.
+
+    This client can be passed to OpenAI SDK's http_client parameter for async operations.
+
+    Args:
+        timeout: Request timeout in seconds (default: 60.0)
+
+    Returns:
+        httpx.AsyncClient configured with proxy settings
+
+    Example:
+        >>> http_client = create_async_httpx_client()
+        >>> from openai import AsyncOpenAI
+        >>> client = AsyncOpenAI(api_key="...", http_client=http_client)
+    """
+    proxy_config = get_proxy_config()
+
+    # Build httpx client configuration
+    client_kwargs = {
+        "timeout": timeout,
+    }
+
+    if proxy_config:
+        # Use the proxy URL (httpx 0.27.0+ uses 'proxy' parameter, not 'proxies')
+        proxy_url = proxy_config.get("https://", proxy_url.get("http://"))
+        client_kwargs["proxy"] = proxy_url
+        logger.debug(f"Creating async httpx client with proxy: {proxy_url.split('@')[-1]}")
+    else:
+        logger.debug("Creating async httpx client without proxy")
+
+    return httpx.AsyncClient(**client_kwargs)
+
+
+def setup_proxy_environment() -> bool:
+    """Setup HTTP_PROXY and HTTPS_PROXY environment variables for SDK usage.
+
+    Many SDKs (OpenAI, LangChain) automatically use HTTP_PROXY/HTTPS_PROXY environment variables.
+    This function sets them based on the PROXY_USE and OPENAI_PROXY settings.
+
+    Returns:
+        True if proxy was configured, False otherwise
+    """
+    proxy_config = get_proxy_config()
+    if not proxy_config:
+        return False
+
+    proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
+    os.environ["HTTP_PROXY"] = proxy_url
+    os.environ["HTTPS_PROXY"] = proxy_url
+
+    # Log without credentials
+    safe_url = proxy_url.split('@')[-1] if '@' in proxy_url else proxy_url
+    logger.info(f"✓ Proxy configured for SDKs: {safe_url}")
+
+    return True
 
 
 def log_proxy_status():

@@ -2,10 +2,11 @@
 
 import asyncio
 import logging
-import os
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
 from typing import Any
+
+from shared.constants import DEFAULT_EPISODE_DELAY, MAX_RETRY_COUNT
 
 logger = logging.getLogger(__name__)
 
@@ -137,9 +138,9 @@ class QueueService:
 
         async def process_episode():
             """Process the episode using the graphiti client with retry logic for rate limits."""
-            # Get delay from environment variable (default: 20 seconds)
-            delay = int(os.environ.get("EPISODE_PROCESSING_DELAY", "20"))
-            max_retries = 5  # Maximum number of retries for rate limit errors
+            # Get delay from constants (which reads from environment variable)
+            delay = DEFAULT_EPISODE_DELAY
+            max_retries = MAX_RETRY_COUNT
             retry_count = 0
 
             while retry_count <= max_retries:

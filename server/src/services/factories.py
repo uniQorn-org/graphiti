@@ -2,7 +2,7 @@
 
 from config.schema import DatabaseConfig, EmbedderConfig, LLMConfig
 from openai import AsyncAzureOpenAI
-from utils.proxy_utils import get_proxy_config, log_proxy_status
+from shared.utils.proxy_config import get_proxy_config, log_proxy_status
 
 # Try to import FalkorDriver if available
 try:

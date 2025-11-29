@@ -47,14 +47,8 @@ else:
 
 # Configure proxy settings early for OpenAI SDK
 # OpenAI SDK uses HTTP_PROXY and HTTPS_PROXY environment variables
-proxy_use = os.getenv("PROXY_USE", "FALSE").upper()
-if proxy_use == "TRUE":
-    openai_proxy = os.getenv("OPENAI_PROXY")
-    if openai_proxy:
-        # Set HTTP_PROXY and HTTPS_PROXY for OpenAI SDK
-        os.environ["HTTP_PROXY"] = openai_proxy
-        os.environ["HTTPS_PROXY"] = openai_proxy
-        print(f"✓ Proxy configured for OpenAI SDK: {openai_proxy}")
+from shared.utils.proxy_config import setup_proxy_environment
+setup_proxy_environment()
 
 # Semaphore limit for concurrent Graphiti operations.
 #

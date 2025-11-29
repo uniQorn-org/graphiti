@@ -1,52 +1,54 @@
 """
-LangChainサービス - RAG & チャット
+LangChain service - RAG & Chat
 """
 import logging
+import os
 from typing import List
+
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
+
+# Use shared proxy configuration
+import sys
+from pathlib import Path
+server_src_path = Path(__file__).parent.parent.parent.parent / "server" / "src"
+if str(server_src_path) not in sys.path:
+    sys.path.insert(0, str(server_src_path))
+
+from shared.utils.proxy_config import setup_proxy_environment, log_proxy_status
+from shared.constants import DEFAULT_LLM_TEMPERATURE
+
 from ..models.schemas import ChatMessage, ChatResponse, SearchResult
 from .graphiti_service import GraphitiService
-from ..utils.proxy_utils import get_proxy_config, log_proxy_status
 
 logger = logging.getLogger(__name__)
 
 
 class LangChainService:
-    """LangChainを使ったRAGチャットサービス"""
+    """RAG chat service using LangChain"""
 
     def __init__(
         self, graphiti_service: GraphitiService, openai_api_key: str, model: str
     ):
         """
-        初期化
+        Initialize LangChain service.
 
         Args:
-            graphiti_service: Graphitiサービス
-            openai_api_key: OpenAI APIキー
-            model: 使用するモデル名
+            graphiti_service: Graphiti service instance
+            openai_api_key: OpenAI API key
+            model: Model name to use
         """
         self.graphiti = graphiti_service
 
-        # Log proxy configuration status
+        # Log and setup proxy configuration
         log_proxy_status()
-
-        # Set proxy environment variables if PROXY_USE is enabled
-        # LangChain's ChatOpenAI will automatically use HTTP_PROXY/HTTPS_PROXY env vars
-        import os
-        proxy_config = get_proxy_config()
-        if proxy_config:
-            proxy_url = proxy_config.get("https://", proxy_config.get("http://"))
-            os.environ["HTTP_PROXY"] = proxy_url
-            os.environ["HTTPS_PROXY"] = proxy_url
-            logger.info(f"Set HTTP_PROXY/HTTPS_PROXY for ChatOpenAI: {proxy_url.split('@')[-1]}")
+        setup_proxy_environment()
 
         # ChatOpenAI will automatically use:
-        # 1. HTTP_PROXY/HTTPS_PROXY environment variables (set above)
+        # 1. HTTP_PROXY/HTTPS_PROXY environment variables (set by setup_proxy_environment)
         # 2. NO_PROXY environment variable (from .env)
-        # No need to pass http_client parameter
 
         # Check if custom base_url is set (for cc-throttle or corporate proxy)
         base_url = os.getenv("OPENAI_BASE_URL")
@@ -56,14 +58,14 @@ class LangChainService:
                 api_key=openai_api_key,
                 base_url=base_url,
                 model=model,
-                temperature=0.7,
+                temperature=DEFAULT_LLM_TEMPERATURE,
                 streaming=False
             )
         else:
             self.llm = ChatOpenAI(
                 api_key=openai_api_key,
                 model=model,
-                temperature=0.7,
+                temperature=DEFAULT_LLM_TEMPERATURE,
                 streaming=False
             )
 
@@ -94,17 +96,17 @@ class LangChainService:
         )
 
         self.chain = self.prompt | self.llm | StrOutputParser()
-        logger.info("LangChainサービスを初期化しました")
+        logger.info("LangChain service initialized successfully")
 
     def _format_search_results(self, search_results: SearchResult) -> str:
         """
-        検索結果をテキスト形式に変換
+        Format search results as text.
 
         Args:
-            search_results: 検索結果
+            search_results: Search results from Graphiti
 
         Returns:
-            フォーマットされたテキスト
+            Formatted text string
         """
         if search_results.total_count == 0:
             return "関連する情報が見つかりませんでした。"
