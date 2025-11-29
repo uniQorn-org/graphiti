@@ -6,54 +6,44 @@ from typing import Any
 import boto3
 
 from .base import BaseIngester
+from .config import ZoomIngestionConfig
 from .utils import build_minio_url
 
 
 class ZoomIngester(BaseIngester):
     """Ingester for Zoom VTT transcripts."""
 
-    def __init__(
-        self,
-        data_dir: str | Path,
-        minio_endpoint: str = "localhost:20734",
-        minio_public_endpoint: str | None = None,
-        minio_access_key: str = "minio",
-        minio_secret_key: str = "miniosecret",
-        bucket_name: str = "zoom-transcripts",
-        **kwargs,
-    ):
+    def __init__(self, config: ZoomIngestionConfig, **kwargs):
         """
         Initialize Zoom ingester.
 
         Args:
-            data_dir: Directory containing VTT files
-            minio_endpoint: MinIO endpoint
-            minio_public_endpoint: MinIO public endpoint (for browser access)
-            minio_access_key: MinIO access key
-            minio_secret_key: MinIO secret key
-            bucket_name: MinIO bucket name
+            config: Zoom ingestion configuration
             **kwargs: Additional arguments for BaseIngester
         """
         super().__init__(**kwargs)
-        self.vtt_dir = Path(data_dir)
-        self.minio_endpoint = minio_endpoint
-        self.minio_public_endpoint = minio_public_endpoint or minio_endpoint
-        self.bucket_name = bucket_name
+        self.vtt_dir = Path(config.data_dir)
+        self.minio_endpoint = config.minio_endpoint
+        self.minio_public_endpoint = (
+            config.minio_public_endpoint or config.minio_endpoint
+        )
+        self.bucket_name = config.bucket_name
 
         # Initialize MinIO client
         self.minio_client = boto3.client(
             "s3",
-            endpoint_url=f"http://{minio_endpoint}",
-            aws_access_key_id=minio_access_key,
-            aws_secret_access_key=minio_secret_key,
+            endpoint_url=f"http://{config.minio_endpoint}",
+            aws_access_key_id=config.minio_access_key,
+            aws_secret_access_key=config.minio_secret_key,
         )
 
         # Create bucket if not exists
         try:
-            self.minio_client.head_bucket(Bucket=bucket_name)
-        except:
-            self.minio_client.create_bucket(Bucket=bucket_name)
-            print(f"Created MinIO bucket: {bucket_name}")
+            self.minio_client.head_bucket(Bucket=self.bucket_name)
+        except Exception:
+            # Bucket doesn't exist or other error - try to create it
+            self.minio_client.create_bucket(Bucket=self.bucket_name)
+            print(f"Created MinIO bucket: {self.bucket_name}")
 
     def get_source_type(self) -> str:
         """Get source type identifier."""
