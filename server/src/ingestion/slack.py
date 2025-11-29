@@ -1,6 +1,14 @@
-"""Slack messages ingestion."""
+"""Slack messages ingestion.
 
-from datetime import datetime, timedelta
+reference_time definition:
+- For thread episodes: Timestamp of the first message in the thread (thread_ts)
+- For standalone messages: Timestamp of the message (ts)
+
+This timestamp represents when the conversation/message actually occurred in Slack,
+and will be used by graphiti-core as the valid_at for extracted entities and relations.
+"""
+
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import requests
@@ -77,11 +85,17 @@ class SlackIngester(BaseIngester):
         all_messages = []
         cursor = None
 
+        # Disable proxy for Slack API requests (bypass corporate proxy)
+        proxies = {
+            'http': None,
+            'https': None,
+        }
+
         while True:
             if cursor:
                 params["cursor"] = cursor
 
-            response = requests.get(url, headers=headers, params=params)
+            response = requests.get(url, headers=headers, params=params, proxies=proxies)
             data = response.json()
 
             if not data.get("ok"):
@@ -120,8 +134,14 @@ class SlackIngester(BaseIngester):
 
         params = {"user": user_id}
 
+        # Disable proxy for Slack API requests (bypass corporate proxy)
+        proxies = {
+            'http': None,
+            'https': None,
+        }
+
         try:
-            response = requests.get(url, headers=headers, params=params)
+            response = requests.get(url, headers=headers, params=params, proxies=proxies)
             data = response.json()
 
             if data.get("ok"):
@@ -208,8 +228,10 @@ class SlackIngester(BaseIngester):
         thread_ts = data["thread_ts"]
         thread_msgs = data["messages"]
 
-        # Build conversation
+        # Build conversation (without user IDs in text)
         conversation_lines = []
+        user_metadata = []  # Collect unique users
+
         for msg in thread_msgs:
             user_id = msg.get("user", "Unknown")
             user_name = self._get_user_info(user_id)
@@ -221,11 +243,23 @@ class SlackIngester(BaseIngester):
 
             conversation_lines.append(f"{user_name}: {text}")
 
+            # Collect unique user metadata
+            if user_id not in [u["id"] for u in user_metadata]:
+                user_metadata.append({
+                    "id": user_id,
+                    "name": user_name,
+                })
+
         conversation = "\n".join(conversation_lines)
 
-        # Get parent message
+        # Get parent message and timestamp
         parent_msg = thread_msgs[0]
         parent_ts = parent_msg["ts"]
+        first_ts = float(parent_ts)
+        first_datetime = datetime.fromtimestamp(first_ts, tz=timezone.utc)
+
+        # Build structured metadata for participants
+        participants_str = ", ".join([f"{u['name']} ({u['id']})" for u in user_metadata])
 
         # Build episode metadata
         episode_name = f"slack:thread:{self.channel_id}:{thread_ts}"
@@ -233,6 +267,8 @@ class SlackIngester(BaseIngester):
         source_description = (
             f"Slack thread, channel: {self.channel_id}, "
             f"thread_ts: {thread_ts}, "
+            f"timestamp: {first_datetime.isoformat()}, "
+            f"participants: {participants_str}, "
             f"messages: {len(thread_msgs)}"
         )
 
@@ -242,6 +278,7 @@ class SlackIngester(BaseIngester):
             "source": "message",
             "source_description": source_description,
             "source_url": source_url,
+            "reference_time": first_datetime,  # Timestamp of first message
         }
 
     def _build_standalone_episode(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -261,11 +298,11 @@ class SlackIngester(BaseIngester):
         episode_name = f"slack:message:{self.channel_id}:{ts}"
         source_url = build_slack_url(self.workspace_id, self.channel_id, ts)
 
-        dt = datetime.fromtimestamp(float(ts))
+        dt = datetime.fromtimestamp(float(ts), tz=timezone.utc)
         source_description = (
             f"Slack message, channel: {self.channel_id}, "
             f"timestamp: {dt.isoformat()}, "
-            f"user: {user_name}"
+            f"user: {user_name} ({user_id})"  # Include user ID in metadata
         )
 
         return {
@@ -274,4 +311,5 @@ class SlackIngester(BaseIngester):
             "source": "message",
             "source_description": source_description,
             "source_url": source_url,
+            "reference_time": dt,  # Timestamp of the message
         }

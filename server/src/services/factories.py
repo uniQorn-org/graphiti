@@ -15,6 +15,7 @@ except ImportError:
 # Kuzu support removed - FalkorDB is now the default
 from graphiti_core.embedder import EmbedderClient, OpenAIEmbedder
 from graphiti_core.llm_client import LLMClient, OpenAIClient
+from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
 from graphiti_core.llm_client.config import LLMConfig as GraphitiLLMConfig
 
 # Try to import additional providers if available
@@ -125,16 +126,22 @@ class LLMClientFactory:
                     config.model.startswith("gpt-5")
                     or config.model.startswith("o1")
                     or config.model.startswith("o3")
+                    or config.model.startswith("o4")
                 )
                 small_model = (
-                    "gpt-5-nano" if is_reasoning_model else "gpt-4.1-mini"
+                    "o4-mini" if is_reasoning_model else "gpt-4.1-mini"
                 )  # Use reasoning model for small tasks if main model is reasoning
+
+                # For reasoning models, temperature must be 1 (do not pass it to avoid errors)
+                # For non-reasoning models, use configured temperature
+                temperature = 1.0 if is_reasoning_model else config.temperature
 
                 llm_config = CoreLLMConfig(
                     api_key=api_key,
+                    base_url=config.providers.openai.api_url,
                     model=config.model,
                     small_model=small_model,
-                    temperature=config.temperature,
+                    temperature=temperature,
                     max_tokens=config.max_tokens,
                 )
 
@@ -149,19 +156,35 @@ class LLMClientFactory:
                     os.environ["HTTPS_PROXY"] = proxy_url
                     logger.debug(f"Set HTTP_PROXY/HTTPS_PROXY for OpenAI SDK")
 
-                # Only pass reasoning/verbosity parameters for reasoning models (gpt-5 family)
+                # For reasoning models (gpt-5, o1, o3, o4), we need to handle them differently
+                # o4-mini works with regular /chat/completions endpoint despite being a reasoning model
+                # gpt-5/o1/o3 may require /responses endpoint which isn't supported by corporate proxy
+
+                # Create httpx client with proxy explicitly disabled
+                # The base_url already points to the corporate reverse proxy, so we don't need httpx's proxy feature
+                import httpx
+                http_client = httpx.AsyncClient(
+                    timeout=httpx.Timeout(120.0),
+                    # Don't set proxies parameter - httpx will not use proxies if HTTP_PROXY env vars are not set
+                    # We've already set NO_PROXY to prevent httpx from using system proxies
+                )
+
+                # Use GPT5Client for all models when using corporate proxy
+                # GPT5Client has the schema validation fixes needed for corporate proxy
+                from services.gpt5_client import GPT5Client
+
                 if is_reasoning_model:
-                    return OpenAIClient(
+                    # For reasoning models (gpt-5, o1, o3, o4), use max_completion_tokens
+                    return GPT5Client(
                         config=llm_config,
-                        reasoning="minimal",
-                        verbosity="low"
+                        max_completion_tokens=config.max_tokens
                     )
                 else:
-                    # For non-reasoning models, explicitly pass None to disable these parameters
-                    return OpenAIClient(
+                    # For standard models (gpt-4o, gpt-4o-mini), use max_tokens
+                    # GPT5Client handles both types correctly
+                    return GPT5Client(
                         config=llm_config,
-                        reasoning=None,
-                        verbosity=None
+                        max_completion_tokens=config.max_tokens
                     )
 
             case "azure_openai":
@@ -301,6 +324,7 @@ class EmbedderFactory:
 
                 embedder_config = OpenAIEmbedderConfig(
                     api_key=api_key,
+                    base_url=config.providers.openai.api_url,
                     embedding_model=config.model,
                 )
 

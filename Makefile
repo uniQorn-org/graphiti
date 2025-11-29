@@ -1,4 +1,4 @@
-.PHONY: help setup start stop restart logs logs-mcp logs-neo4j logs-backend logs-frontend clean clean-data ps health test ingest-github ingest-slack ingest-zoom shell-mcp shell-neo4j build rebuild
+.PHONY: help setup start stop restart logs logs-mcp logs-neo4j logs-backend logs-frontend clean clean-data ps health test ingest-github ingest-slack ingest-zoom shell-mcp shell-neo4j build rebuild demo
 
 # Default target
 .DEFAULT_GOAL := help
@@ -150,22 +150,26 @@ ingest-github: ## Ingest GitHub issues (requires GITHUB_TOKEN, GITHUB_OWNER, GIT
 ingest-slack: ## Ingest Slack messages (requires SLACK_TOKEN, WORKSPACE_ID, CHANNEL_ID)
 	@if [ -z "$(SLACK_TOKEN)" ]; then \
 		echo "$(RED)Error: SLACK_TOKEN is not set$(NC)"; \
-		echo "Usage: make ingest-slack SLACK_TOKEN=xoxc-... WORKSPACE_ID=T... CHANNEL_ID=C... DAYS=7"; \
+		echo "Usage: make ingest-slack SLACK_TOKEN=xoxc-... WORKSPACE_ID=T... CHANNEL_ID=C... DAYS=7 SLACK_COOKIE='...'"; \
 		exit 1; \
 	fi
 	@if [ -z "$(WORKSPACE_ID)" ]; then \
 		echo "$(RED)Error: WORKSPACE_ID is not set$(NC)"; \
-		echo "Usage: make ingest-slack SLACK_TOKEN=xoxc-... WORKSPACE_ID=T... CHANNEL_ID=C... DAYS=7"; \
+		echo "Usage: make ingest-slack SLACK_TOKEN=xoxc-... WORKSPACE_ID=T... CHANNEL_ID=C... DAYS=7 SLACK_COOKIE='...'"; \
 		exit 1; \
 	fi
 	@if [ -z "$(CHANNEL_ID)" ]; then \
 		echo "$(RED)Error: CHANNEL_ID is not set$(NC)"; \
-		echo "Usage: make ingest-slack SLACK_TOKEN=xoxc-... WORKSPACE_ID=T... CHANNEL_ID=C... DAYS=7"; \
+		echo "Usage: make ingest-slack SLACK_TOKEN=xoxc-... WORKSPACE_ID=T... CHANNEL_ID=C... DAYS=7 SLACK_COOKIE='...'"; \
 		exit 1; \
 	fi
 	@DAYS=$${DAYS:-7}; \
+	COOKIE_ARG=""; \
+	if [ -n "$(SLACK_COOKIE)" ]; then \
+		COOKIE_ARG="--cookie '$(SLACK_COOKIE)'"; \
+	fi; \
 	echo "$(BLUE)Ingesting Slack messages (last $$DAYS days)...$(NC)"; \
-	docker-compose exec -e SLACK_TOKEN=$(SLACK_TOKEN) graphiti-mcp python src/scripts/ingest_slack.py --token $(SLACK_TOKEN) --workspace-id $(WORKSPACE_ID) --channel-id $(CHANNEL_ID) --days $$DAYS
+	docker-compose exec -e SLACK_TOKEN=$(SLACK_TOKEN) graphiti-mcp python src/scripts/ingest_slack.py --token $(SLACK_TOKEN) --workspace-id $(WORKSPACE_ID) --channel-id $(CHANNEL_ID) --days $$DAYS $$COOKIE_ARG
 	@echo "$(GREEN)✓ Slack messages ingested$(NC)"
 
 ingest-zoom: ## Ingest Zoom transcripts from data/zoom/ directory
@@ -262,3 +266,66 @@ quick-start: ## Quick start (setup + start + health check)
 dev: ## Start services and show logs
 	@make start
 	@make logs
+
+demo: ## Setup, start services, and load demo data
+	@echo "$(BLUE)========================================$(NC)"
+	@echo "$(BLUE)  Graphiti Demo Setup$(NC)"
+	@echo "$(BLUE)========================================$(NC)"
+	@echo ""
+	@echo "$(YELLOW)This will:$(NC)"
+	@echo "  1. Check environment setup"
+	@echo "  2. Build Docker images"
+	@echo "  3. Start all services"
+	@echo "  4. Load demo data (GitHub, Slack, Zoom)"
+	@echo "  5. Upload Zoom transcript to MinIO"
+	@echo ""
+	@echo "$(YELLOW)⏱️  Estimated time: 5-10 minutes$(NC)"
+	@echo ""
+	@# Step 1: Setup
+	@echo "$(BLUE)[1/6] Checking environment setup...$(NC)"
+	@make setup || exit 1
+	@echo ""
+	@# Step 2: Build
+	@echo "$(BLUE)[2/6] Building Docker images...$(NC)"
+	@docker-compose build
+	@echo "$(GREEN)✓ Images built$(NC)"
+	@echo ""
+	@# Step 3: Start services
+	@echo "$(BLUE)[3/6] Starting all services...$(NC)"
+	@docker-compose up -d
+	@echo "$(YELLOW)Waiting for services to be ready...$(NC)"
+	@sleep 10
+	@make health || (echo "$(RED)✗ Services failed to start. Check logs with 'make logs'$(NC)" && exit 1)
+	@echo ""
+	@# Step 4: Load demo data
+	@echo "$(BLUE)[4/6] Loading demo data into knowledge graph...$(NC)"
+	@echo "$(YELLOW)⚠️  This may take several minutes due to LLM processing and rate limits$(NC)"
+	@docker-compose exec -T graphiti-mcp python src/scripts/load_demo_data.py --data-dir /app/data
+	@echo ""
+	@# Step 5: Upload to MinIO
+	@echo "$(BLUE)[5/6] Uploading Zoom transcript to MinIO...$(NC)"
+	@if [ -f data/zoom/test_transcript.vtt ]; then \
+		docker-compose exec -T minio sh -c "mc alias set minio http://localhost:9000 minio miniosecret 2>/dev/null && mc cp /app/data/zoom/test_transcript.vtt minio/zoom-transcripts/ 2>/dev/null" || true; \
+		echo "$(GREEN)✓ Zoom transcript uploaded to MinIO$(NC)"; \
+	else \
+		echo "$(YELLOW)⚠️  Zoom transcript not found, skipping MinIO upload$(NC)"; \
+	fi
+	@echo ""
+	@# Step 6: Success message
+	@echo "$(GREEN)========================================$(NC)"
+	@echo "$(GREEN)  ✓ Demo Setup Complete!$(NC)"
+	@echo "$(GREEN)========================================$(NC)"
+	@echo ""
+	@echo "$(BLUE)Access URLs:$(NC)"
+	@echo "  $(GREEN)Frontend UI:$(NC)      http://localhost:20002"
+	@echo "  $(GREEN)Neo4j Browser:$(NC)    http://localhost:20474 (user: neo4j, pass: password123)"
+	@echo "  $(GREEN)Backend API:$(NC)      http://localhost:20001/docs"
+	@echo "  $(GREEN)Graphiti MCP:$(NC)     http://localhost:30547"
+	@echo "  $(GREEN)MinIO Console:$(NC)    http://localhost:20735 (user: minio, pass: miniosecret)"
+	@echo ""
+	@echo "$(BLUE)Next Steps:$(NC)"
+	@echo "  1. Visit http://localhost:20002 to search the knowledge graph"
+	@echo "  2. Try queries like: '議論の内容は？' or 'What was discussed?'"
+	@echo "  3. Explore the graph in Neo4j Browser: http://localhost:20474"
+	@echo ""
+	@echo "$(YELLOW)Need help? Run 'make help'$(NC)"

@@ -155,9 +155,20 @@ export const factsAPI = {
   },
 };
 
+export interface DeleteEpisodeResponse {
+  status: string;
+  uuid: string;
+  message: string;
+}
+
 export const episodesAPI = {
   async addEpisode(request: AddEpisodeRequest): Promise<AddEpisodeResponse> {
     const response = await api.post<AddEpisodeResponse>('/episodes', request);
+    return response.data;
+  },
+
+  async deleteEpisode(uuid: string): Promise<DeleteEpisodeResponse> {
+    const response = await api.delete<DeleteEpisodeResponse>(`/graph/episodes/${uuid}`);
     return response.data;
   },
 };

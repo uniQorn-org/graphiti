@@ -1,0 +1,25 @@
+WEBVTT
+
+1
+0:00:00.000 --> 0:00:03.000
+Aki: Did you finish reviewing the API rate-limiter patch?
+
+2
+0:00:04.000 --> 0:00:07.000
+Sora: Almost. The edge-case handling for burst traffic still needs tweaks.
+
+3
+0:00:08.000 --> 0:00:11.000
+Aki: Yeah, I saw that. The Redis window resets too early under load.
+
+4
+0:00:12.000 --> 0:00:16.000
+Sora: Exactly. I’m thinking of switching to a sliding window implementation.
+
+5
+0:00:17.000 --> 0:00:20.000
+Aki: That’d be cleaner. Want to pair on it after lunch?
+
+6
+0:00:21.000 --> 0:00:24.000
+Sora: Sure, works for me.

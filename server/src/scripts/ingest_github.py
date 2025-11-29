@@ -29,14 +29,14 @@ async def main():
     parser.add_argument(
         "--owner",
         type=str,
-        default=os.getenv("GITHUB_OWNER", "uniQorn-org"),
-        help="GitHub repository owner (default: uniQorn-org)",
+        default=os.getenv("GITHUB_OWNER", "hoge-org"),
+        help="GitHub repository owner (default: hoge-org)",
     )
     parser.add_argument(
         "--repo",
         type=str,
-        default=os.getenv("GITHUB_REPO", "uniqorn-zoom"),
-        help="GitHub repository name (default: uniqorn-zoom)",
+        default=os.getenv("GITHUB_REPO", "hoge-repo"),
+        help="GitHub repository name (default: hoge-repo)",
     )
     parser.add_argument(
         "--state",

@@ -45,6 +45,16 @@ else:
     # Try current working directory as fallback
     load_dotenv()
 
+# Configure proxy settings early for OpenAI SDK
+# OpenAI SDK uses HTTP_PROXY and HTTPS_PROXY environment variables
+proxy_use = os.getenv("PROXY_USE", "FALSE").upper()
+if proxy_use == "TRUE":
+    openai_proxy = os.getenv("OPENAI_PROXY")
+    if openai_proxy:
+        # Set HTTP_PROXY and HTTPS_PROXY for OpenAI SDK
+        os.environ["HTTP_PROXY"] = openai_proxy
+        os.environ["HTTPS_PROXY"] = openai_proxy
+        print(f"✓ Proxy configured for OpenAI SDK: {openai_proxy}")
 
 # Semaphore limit for concurrent Graphiti operations.
 #
@@ -366,6 +376,7 @@ async def add_memory(
     source_description: str = "",
     source_url: str | None = None,
     uuid: str | None = None,
+    reference_time: str | None = None,
 ) -> SuccessResponse | ErrorResponse:
     """Add an episode to memory. This is the primary way to add information to the graph.
 
@@ -386,6 +397,8 @@ async def add_memory(
         source_description (str, optional): Description of the source
         source_url (str, optional): URL of the source (e.g., Slack message link, GitHub issue URL)
         uuid (str, optional): Optional UUID for the episode
+        reference_time (str, optional): ISO 8601 timestamp when the episode occurred (e.g., "2024-11-20T10:30:00Z").
+                                       If not provided, current time will be used.
 
     Examples:
         # Adding plain text content
@@ -427,6 +440,21 @@ async def add_memory(
                 )
                 episode_type = EpisodeType.text
 
+        # Parse reference_time if provided
+        parsed_reference_time = None
+        if reference_time:
+            try:
+                from datetime import datetime, timezone
+                parsed_reference_time = datetime.fromisoformat(reference_time.replace('Z', '+00:00'))
+                # Ensure it's in UTC
+                if parsed_reference_time.tzinfo is None:
+                    parsed_reference_time = parsed_reference_time.replace(tzinfo=timezone.utc)
+            except (ValueError, AttributeError) as e:
+                logger.warning(
+                    f"Invalid reference_time format '{reference_time}': {e}. Using current time."
+                )
+                parsed_reference_time = None
+
         await queue_service.add_episode(
             group_id=effective_group_id,
             name=name,
@@ -436,6 +464,7 @@ async def add_memory(
             episode_type=episode_type,
             entity_types=graphiti_service.entity_types,
             uuid=uuid or None,  # Ensure None is passed if uuid is None
+            reference_time=parsed_reference_time,
         )
 
         return SuccessResponse(
@@ -1012,13 +1041,19 @@ async def graph_search_endpoint(request):
     return await search_graph_api(request, graphiti_service, config)
 
 
-@mcp.custom_route("/graph/episodes/{uuid}", methods=["DELETE"])
+@mcp.custom_route("/graph/episodes/{uuid}", methods=["DELETE", "OPTIONS"])
 async def delete_episode_endpoint(request):
     """
     Delete an episode and all related nodes/facts by UUID.
 
     DELETE /graph/episodes/{uuid}
     """
+    if request.method == "OPTIONS":
+        response = JSONResponse({"status": "ok"}, status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
     return await delete_episode_api(request, graphiti_service)
 
 

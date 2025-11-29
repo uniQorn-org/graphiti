@@ -1,0 +1,323 @@
+{
+  "source_type": "slack",
+  "fetched_at": "2025-11-26T18:31:47.549040",
+  "item_count": 5,
+  "translated": true,
+  "data": [
+    {
+      "type": "thread",
+      "thread_ts": "1732600000.000001",
+      "messages": [
+        {
+          "user": "Aki",
+          "type": "message",
+          "ts": "1732600000.000001",
+          "client_msg_id": "11111111-1111-1111-1111-111111111111",
+          "text": "Just uploaded the meeting transcript VTT. We were mostly discussing the chat API rate limiter and webhook retries.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600000.000001",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "latest_reply": "1732600120.000003",
+          "reply_users": [
+            "Aki",
+            "Sora"
+          ],
+          "is_locked": false,
+          "subscribed": true,
+          "last_read": "1732600120.000003",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk1",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "Just uploaded the meeting transcript VTT. We were mostly discussing the chat API rate limiter and webhook retries."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "user": "Sora",
+          "type": "message",
+          "ts": "1732600060.000002",
+          "client_msg_id": "22222222-2222-2222-2222-222222222222",
+          "text": "Nice, this is perfect as demo data. The conversation is casual but still technical enough to explain the sliding window logic.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600000.000001",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk2",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "Nice, this is perfect as demo data. The conversation is casual but still technical enough to explain the sliding window logic."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "user": "Aki",
+          "type": "message",
+          "ts": "1732600120.000003",
+          "client_msg_id": "33333333-3333-3333-3333-333333333333",
+          "text": "Yeah, and we also mention pairing after lunch, which makes the transcription look realistic for dev workflows.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600000.000001",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk3",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "Yeah, and we also mention pairing after lunch, which makes the transcription look realistic for dev workflows."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "thread",
+      "thread_ts": "1732600200.000001",
+      "messages": [
+        {
+          "user": "Sora",
+          "type": "message",
+          "ts": "1732600200.000001",
+          "client_msg_id": "44444444-4444-4444-4444-444444444444",
+          "text": "I created a demo GitHub issue JSON for the rate limiter bug. The reporter is Aki and comments are from both of us.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600200.000001",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "latest_reply": "1732600320.000003",
+          "reply_users": [
+            "Aki",
+            "Sora"
+          ],
+          "is_locked": false,
+          "subscribed": true,
+          "last_read": "1732600320.000003",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk4",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "I created a demo GitHub issue JSON for the rate limiter bug. The reporter is Aki and comments are from both of us."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "user": "Aki",
+          "type": "message",
+          "ts": "1732600260.000002",
+          "client_msg_id": "55555555-5555-5555-5555-555555555555",
+          "text": "Thanks! I like that the issue description talks about inconsistent counts under burst load and suggests timestamp buckets.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600200.000001",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk5",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "Thanks! I like that the issue description talks about inconsistent counts under burst load and suggests timestamp buckets."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "user": "Sora",
+          "type": "message",
+          "ts": "1732600320.000003",
+          "client_msg_id": "66666666-6666-6666-6666-666666666666",
+          "text": "Yeah, and the second issue about duplicate webhook retries matches the VTT conversation about the job runner race condition.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600200.000001",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk6",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "Yeah, and the second issue about duplicate webhook retries matches the VTT conversation about the job runner race condition."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "thread",
+      "thread_ts": "1732600400.000001",
+      "messages": [
+        {
+          "user": "Aki",
+          "type": "message",
+          "ts": "1732600400.000001",
+          "client_msg_id": "77777777-7777-7777-7777-777777777777",
+          "text": "Just to confirm: the VTT, GitHub issues JSON, and this Slack-style JSON all share the same domain: rate limiting + webhook processing.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600400.000001",
+          "reply_count": 1,
+          "reply_users_count": 1,
+          "latest_reply": "1732600460.000002",
+          "reply_users": [
+            "Sora"
+          ],
+          "is_locked": false,
+          "subscribed": true,
+          "last_read": "1732600460.000002",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk7",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "Just to confirm: the VTT, GitHub issues JSON, and this Slack-style JSON all share the same domain: rate limiting + webhook processing."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "user": "Sora",
+          "type": "message",
+          "ts": "1732600460.000002",
+          "client_msg_id": "88888888-8888-8888-8888-888888888888",
+          "text": "Exactly. That way, we can run end-to-end demos: transcript → issue generation → Slack summary, all with consistent entities and terminology.",
+          "team": "T-DEMO",
+          "thread_ts": "1732600400.000001",
+          "blocks": [
+            {
+              "type": "rich_text",
+              "block_id": "blk8",
+              "elements": [
+                {
+                  "type": "rich_text_section",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "text": "Exactly. That way, we can run end-to-end demos: transcript → issue generation → Slack summary, all with consistent entities and terminology."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "standalone",
+      "message": {
+        "user": "Sora",
+        "type": "message",
+        "ts": "1732600500.000001",
+        "client_msg_id": "99999999-9999-9999-9999-999999999999",
+        "text": "Demo repo for this data set is now ready: https://github.com/demo-org/demo-repo (contains the rate limiter and webhook issues).",
+        "team": "T-DEMO",
+        "blocks": [
+          {
+            "type": "rich_text",
+            "block_id": "blk9",
+            "elements": [
+              {
+                "type": "rich_text_section",
+                "elements": [
+                  {
+                    "type": "text",
+                    "text": "Demo repo for this data set is now ready: "
+                  },
+                  {
+                    "type": "link",
+                    "url": "https://github.com/demo-org/demo-repo"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "standalone",
+      "message": {
+        "user": "Aki",
+        "type": "message",
+        "ts": "1732600560.000001",
+        "client_msg_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "text": "Reminder: this JSON is demo-only. Names are just “Aki” and “Sora”, and no internal URLs or real tokens are included.",
+        "team": "T-DEMO",
+        "blocks": [
+          {
+            "type": "rich_text",
+            "block_id": "blk10",
+            "elements": [
+              {
+                "type": "rich_text_section",
+                "elements": [
+                  {
+                    "type": "text",
+                    "text": "Reminder: this JSON is demo-only. Names are just “Aki” and “Sora”, and no internal URLs or real tokens are included."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
