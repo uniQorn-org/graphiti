@@ -1,5 +1,5 @@
 """
-FastAPIメインアプリケーション
+FastAPI main application
 """
 import logging
 from contextlib import asynccontextmanager
@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api import router
 from .config import get_settings, init_services, shutdown_services
 
-# ログ設定
+# Logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -18,27 +18,27 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """アプリケーションライフサイクル管理"""
-    # 起動時
-    logger.info("サービスを初期化中...")
+    """Application lifecycle management"""
+    # Startup
+    logger.info("Initializing services...")
     await init_services()
-    logger.info("サービスの初期化が完了しました")
+    logger.info("Service initialization completed")
     yield
-    # シャットダウン時
-    logger.info("サービスをシャットダウン中...")
+    # Shutdown
+    logger.info("Shutting down services...")
     await shutdown_services()
-    logger.info("サービスのシャットダウンが完了しました")
+    logger.info("Service shutdown completed")
 
 
-# FastAPIアプリケーション作成
+# Create FastAPI application
 app = FastAPI(
     title="Graphiti Search Bot API",
-    description="LangChain + Graphitiを使った社内検索Bot",
+    description="Internal search bot using LangChain + Graphiti",
     version="1.0.0",
     lifespan=lifespan,
 )
 
-# CORS設定
+# CORS configuration
 settings = get_settings()
 origins = settings.cors_origins.split(",")
 
@@ -50,13 +50,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ルーター登録
+# Register router
 app.include_router(router, prefix="/api")
 
 
 @app.get("/")
 async def root():
-    """ルートエンドポイント"""
+    """Root endpoint"""
     return {
         "service": "Graphiti Search Bot API",
         "version": "1.0.0",
@@ -66,7 +66,7 @@ async def root():
 
 @app.get("/health")
 async def health():
-    """ヘルスチェックエンドポイント"""
+    """Health check endpoint"""
     return {"status": "ok"}
 
 

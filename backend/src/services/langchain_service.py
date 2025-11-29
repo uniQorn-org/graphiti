@@ -3,7 +3,6 @@ LangChain service - RAG & Chat
 """
 import logging
 import os
-from typing import List
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -109,37 +108,37 @@ class LangChainService:
             Formatted text string
         """
         if search_results.total_count == 0:
-            return "関連する情報が見つかりませんでした。"
+            return "No relevant information found."
 
         text_parts = []
 
-        # エッジ（関係性）を表示
+        # Display edges (relationships)
         if search_results.edges:
-            text_parts.append("### 関連する事実:")
+            text_parts.append("### Related Facts:")
             for i, edge in enumerate(search_results.edges[:10], 1):
                 text_parts.append(f"{i}. {edge.fact}")
                 if edge.valid_at:
-                    text_parts.append(f"   - 有効期間: {edge.valid_at}")
+                    text_parts.append(f"   - Valid from: {edge.valid_at}")
 
-        # ノード（エンティティ）を表示
+        # Display nodes (entities)
         if search_results.nodes:
-            text_parts.append("\n### 関連するエンティティ:")
+            text_parts.append("\n### Related Entities:")
             for i, node in enumerate(search_results.nodes[:5], 1):
                 text_parts.append(f"{i}. {node.name}")
                 if node.summary:
-                    text_parts.append(f"   - 概要: {node.summary}")
+                    text_parts.append(f"   - Summary: {node.summary}")
 
         return "\n".join(text_parts)
 
-    def _convert_chat_history(self, history: List[ChatMessage]) -> List:
+    def _convert_chat_history(self, history: list[ChatMessage]) -> list:
         """
-        チャット履歴をLangChain形式に変換
+        Convert chat history to LangChain format
 
         Args:
-            history: チャット履歴
+            history: Chat history
 
         Returns:
-            LangChain形式のメッセージリスト
+            Message list in LangChain format
         """
         messages = []
         for msg in history:
@@ -152,33 +151,33 @@ class LangChainService:
     async def chat(
         self,
         message: str,
-        history: List[ChatMessage],
+        history: list[ChatMessage],
         include_search_results: bool = True,
     ) -> ChatResponse:
         """
-        チャット処理
+        Chat processing
 
         Args:
-            message: ユーザーメッセージ
-            history: チャット履歴
-            include_search_results: 検索結果を含めるか
+            message: User message
+            history: Chat history
+            include_search_results: Whether to include search results
 
         Returns:
-            チャット応答
+            Chat response
         """
         try:
-            # Graphitiで検索
+            # Search with Graphiti
             search_results = await self.graphiti.search(message, limit=10)
 
-            # 検索結果をフォーマット
+            # Format search results
             formatted_results = self._format_search_results(search_results)
-            logger.info(f"検索結果フォーマット: {formatted_results}")
-            logger.info(f"検索結果件数: edges={len(search_results.edges)}, nodes={len(search_results.nodes)}")
+            logger.info(f"Formatted search results: {formatted_results}")
+            logger.info(f"Search result counts: edges={len(search_results.edges)}, nodes={len(search_results.nodes)}")
 
-            # チャット履歴を変換
+            # Convert chat history
             langchain_history = self._convert_chat_history(history)
 
-            # LLMに問い合わせ
+            # Query LLM
             response = await self.chain.ainvoke(
                 {
                     "question": message,
@@ -187,7 +186,7 @@ class LangChainService:
                 }
             )
 
-            # ソースを抽出
+            # Extract sources
             sources = []
             for edge in search_results.edges[:5]:
                 sources.append(f"{edge.name}: {edge.fact[:100]}...")
@@ -199,7 +198,7 @@ class LangChainService:
             )
 
         except Exception as e:
-            logger.error(f"チャットエラー: {e}")
+            logger.error(f"Chat error: {e}")
             return ChatResponse(
-                answer=f"エラーが発生しました: {str(e)}", search_results=None, sources=[]
+                answer=f"An error occurred: {str(e)}", search_results=None, sources=[]
             )

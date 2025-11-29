@@ -1,9 +1,8 @@
 """
-APIルート定義
+API route definitions
 """
 import logging
 from fastapi import APIRouter, HTTPException, Depends
-from typing import Optional
 from ..models.schemas import (
     ChatRequest,
     ChatResponse,
@@ -28,13 +27,13 @@ async def chat(
     langchain_service: LangChainService = Depends(get_langchain_service),
 ):
     """
-    チャットエンドポイント
+    Chat endpoint
 
     Args:
-        request: チャットリクエスト
+        request: Chat request
 
     Returns:
-        チャット応答
+        Chat response
     """
     try:
         response = await langchain_service.chat(
@@ -44,7 +43,7 @@ async def chat(
         )
         return response
     except Exception as e:
-        logger.error(f"チャットエラー: {e}")
+        logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -54,13 +53,13 @@ async def search(
     graphiti_service: GraphitiService = Depends(get_graphiti_service),
 ):
     """
-    手動検索エンドポイント
+    Manual search endpoint
 
     Args:
-        request: 検索リクエスト
+        request: Search request
 
     Returns:
-        検索結果
+        Search results
     """
     try:
         results = await graphiti_service.search(
@@ -68,7 +67,7 @@ async def search(
         )
         return results
     except Exception as e:
-        logger.error(f"検索エラー: {e}")
+        logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -79,23 +78,23 @@ async def update_fact(
     graphiti_service: GraphitiService = Depends(get_graphiti_service),
 ):
     """
-    Fact更新エンドポイント
+    Fact update endpoint
 
     Args:
-        edge_uuid: エッジUUID
-        request: 更新リクエスト
+        edge_uuid: Edge UUID
+        request: Update request
 
     Returns:
-        更新結果
+        Update result
     """
     try:
-        # リクエストのedge_uuidを使用
+        # Use edge_uuid from request
         result = await graphiti_service.update_fact(
             edge_uuid=edge_uuid, new_fact=request.new_fact, reason=request.reason
         )
         return result
     except Exception as e:
-        logger.error(f"Fact更新エラー: {e}")
+        logger.error(f"Fact update error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -105,13 +104,13 @@ async def add_episode(
     graphiti_service: GraphitiService = Depends(get_graphiti_service),
 ):
     """
-    エピソード追加エンドポイント
+    Episode addition endpoint
 
     Args:
-        request: エピソード追加リクエスト
+        request: Episode addition request
 
     Returns:
-        追加結果
+        Addition result
     """
     try:
         result = await graphiti_service.add_episode(
@@ -122,11 +121,11 @@ async def add_episode(
         )
         return result
     except Exception as e:
-        logger.error(f"エピソード追加エラー: {e}")
+        logger.error(f"Episode addition error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/health")
 async def health_check():
-    """ヘルスチェック"""
+    """Health check endpoint"""
     return {"status": "healthy", "service": "search-bot-backend"}
