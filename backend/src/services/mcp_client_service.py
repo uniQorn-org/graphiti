@@ -1,8 +1,7 @@
 """
-MCPクライアントサービス - Graphiti MCPサーバーとHTTP通信
+MCP Client Service - HTTP communication with Graphiti MCP Server
 """
 import logging
-from typing import List, Optional
 from datetime import datetime
 import httpx
 from graphiti_core.edges import EntityEdge as GraphitiEntityEdge
@@ -19,22 +18,22 @@ logger = logging.getLogger(__name__)
 
 
 class MCPClientService:
-    """Graphiti MCPサーバーとHTTP通信するクライアント"""
+    """HTTP client for communicating with Graphiti MCP Server"""
 
     def __init__(self, mcp_url: str, neo4j_uri: str = None, neo4j_user: str = None, neo4j_password: str = None):
         """
-        初期化
+        Initialize MCP client service
 
         Args:
-            mcp_url: MCPサーバーのベースURL (例: http://graphiti-mcp:8001)
-            neo4j_uri: Neo4j URI (Fact更新用)
-            neo4j_user: Neo4jユーザー名
-            neo4j_password: Neo4jパスワード
+            mcp_url: Base URL of MCP server (e.g., http://graphiti-mcp:8001)
+            neo4j_uri: Neo4j URI (for fact updates)
+            neo4j_user: Neo4j username
+            neo4j_password: Neo4j password
         """
         self.mcp_url = mcp_url.rstrip("/")
         self.client = httpx.AsyncClient(timeout=60.0)
 
-        # Neo4jドライバー (Fact更新用)
+        # Neo4j driver (for fact updates)
         self.neo4j_uri = neo4j_uri
         self.neo4j_user = neo4j_user
         self.neo4j_password = neo4j_password
@@ -46,24 +45,24 @@ class MCPClientService:
                 auth=(neo4j_user, neo4j_password)
             )
 
-        logger.info(f"MCPクライアント初期化: {self.mcp_url}")
+        logger.info(f"MCP client initialized: {self.mcp_url}")
 
     async def search(
         self,
         query: str,
         limit: int = 10,
-        group_ids: Optional[List[str]] = None,
+        group_ids: list[str] | None = None,
     ) -> SearchResult:
         """
-        ナレッジグラフを検索
+        Search the knowledge graph
 
         Args:
-            query: 検索クエリ
-            limit: 最大結果数
-            group_ids: グループIDリスト
+            query: Search query
+            limit: Maximum number of results
+            group_ids: List of group IDs
 
         Returns:
-            検索結果
+            Search results
         """
         try:
             url = f"{self.mcp_url}/graph/search"
@@ -79,12 +78,12 @@ class MCPClientService:
             response.raise_for_status()
             data = response.json()
 
-            logger.info(f"MCP検索レスポンス: {data}")
+            logger.info(f"MCP search response: {data}")
 
-            # MCPサーバーのレスポンス形式をSearchResultに変換
+            # Convert MCP server response format to SearchResult
             edges = []
             results = data.get("results", data.get("facts", []))
-            logger.info(f"検索結果数: {len(results)}")
+            logger.info(f"Number of search results: {len(results)}")
             if results:
                 for fact in results:
                     # Extract citations from the MCP response
@@ -112,28 +111,28 @@ class MCPClientService:
             return SearchResult(nodes=[], edges=edges, total_count=len(edges))
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"MCP検索HTTPエラー: {e}")
+            logger.error(f"MCP search HTTP error: {e}")
             return SearchResult(nodes=[], edges=[], total_count=0)
         except Exception as e:
-            logger.error(f"MCP検索エラー: {e}")
+            logger.error(f"MCP search error: {e}")
             return SearchResult(nodes=[], edges=[], total_count=0)
 
     async def update_fact(
         self,
         edge_uuid: str,
         new_fact: str,
-        reason: Optional[str] = None,
+        reason: str | None = None,
     ) -> UpdateFactResponse:
         """
-        Factを更新
+        Update a fact
 
         Args:
-            edge_uuid: エッジのUUID
-            new_fact: 新しいFact
-            reason: 更新理由
+            edge_uuid: UUID of the edge
+            new_fact: New fact text
+            reason: Update reason
 
         Returns:
-            更新結果
+            Update result
         """
         try:
             url = f"{self.mcp_url}/graph/facts/{edge_uuid}"
@@ -148,7 +147,7 @@ class MCPClientService:
             data = response.json()
 
             if data.get("status") == "success":
-                # 更新されたエッジ情報を取得
+                # Get updated edge information
                 fact_data = data.get("fact", {})
                 updated_edge = EntityEdge(
                     uuid=fact_data.get("uuid", edge_uuid),
@@ -168,42 +167,42 @@ class MCPClientService:
 
                 return UpdateFactResponse(
                     success=True,
-                    message=data.get("message", "Factを更新しました"),
+                    message=data.get("message", "Fact updated successfully"),
                     updated_edge=updated_edge,
                 )
             else:
                 return UpdateFactResponse(
                     success=False,
-                    message=data.get("error", "更新に失敗しました"),
+                    message=data.get("error", "Update failed"),
                 )
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"MCP Fact更新HTTPエラー: {e}")
+            logger.error(f"MCP fact update HTTP error: {e}")
             return UpdateFactResponse(
-                success=False, message=f"HTTPエラー: {e.response.status_code}"
+                success=False, message=f"HTTP error: {e.response.status_code}"
             )
         except Exception as e:
-            logger.error(f"MCP Fact更新エラー: {e}")
-            return UpdateFactResponse(success=False, message=f"エラー: {str(e)}")
+            logger.error(f"MCP fact update error: {e}")
+            return UpdateFactResponse(success=False, message=f"Error: {str(e)}")
 
     async def add_episode(
         self,
         name: str,
         content: str,
         source: str = "text",
-        source_description: Optional[str] = None,
+        source_description: str | None = None,
     ) -> AddEpisodeResponse:
         """
-        新しいエピソードを追加
+        Add a new episode
 
         Args:
-            name: エピソード名
-            content: エピソード内容
-            source: ソース（text/json/message）
-            source_description: ソースの説明
+            name: Episode name
+            content: Episode content
+            source: Source type (text/json/message)
+            source_description: Source description
 
         Returns:
-            追加結果
+            Addition result
         """
         try:
             url = f"{self.mcp_url}/graph/episodes"
@@ -221,24 +220,24 @@ class MCPClientService:
             if data.get("status") == "success":
                 return AddEpisodeResponse(
                     success=True,
-                    message=data.get("message", "エピソードを追加しました"),
+                    message=data.get("message", "Episode added successfully"),
                     episode_uuid=name,
                 )
             else:
                 return AddEpisodeResponse(
-                    success=False, message=data.get("error", "追加に失敗しました")
+                    success=False, message=data.get("error", "Addition failed")
                 )
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"MCPエピソード追加HTTPエラー: {e}")
+            logger.error(f"MCP episode addition HTTP error: {e}")
             return AddEpisodeResponse(
-                success=False, message=f"HTTPエラー: {e.response.status_code}"
+                success=False, message=f"HTTP error: {e.response.status_code}"
             )
         except Exception as e:
-            logger.error(f"MCPエピソード追加エラー: {e}")
-            return AddEpisodeResponse(success=False, message=f"エラー: {str(e)}")
+            logger.error(f"MCP episode addition error: {e}")
+            return AddEpisodeResponse(success=False, message=f"Error: {str(e)}")
 
     async def close(self):
-        """クライアントを閉じる"""
+        """Close the client"""
         await self.client.aclose()
-        logger.info("MCPクライアントを閉じました")
+        logger.info("MCP client closed")

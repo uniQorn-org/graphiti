@@ -9,7 +9,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from config.schema import GraphitiConfig, ServerConfig
 from dotenv import load_dotenv

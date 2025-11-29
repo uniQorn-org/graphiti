@@ -4,7 +4,6 @@ Graphiti service - Knowledge graph management
 import logging
 import sys
 from pathlib import Path
-from typing import List
 from datetime import datetime
 
 from graphiti_core import Graphiti
@@ -39,33 +38,33 @@ logger = logging.getLogger(__name__)
 
 
 class GraphitiService:
-    """Graphitiクライアントのラッパー"""
+    """Wrapper for Graphiti client"""
 
     def __init__(self, uri: str, user: str, password: str):
         """
-        初期化
+        Initialize Graphiti service
 
         Args:
             uri: Neo4j URI
-            user: Neo4j ユーザー名
-            password: Neo4j パスワード
+            user: Neo4j username
+            password: Neo4j password
         """
         self.client = Graphiti(uri=uri, user=user, password=password)
-        logger.info(f"Graphitiサービスを初期化しました: {uri}")
+        logger.info(f"Graphiti service initialized: {uri}")
 
     async def search(self, query: str, limit: int = 10) -> SearchResult:
         """
-        ナレッジグラフを検索
+        Search the knowledge graph
 
         Args:
-            query: 検索クエリ
-            limit: 結果の最大数
+            query: Search query
+            limit: Maximum number of results
 
         Returns:
-            検索結果
+            Search results
         """
         try:
-            # Graphitiで検索 (limitパラメータは使用しない)
+            # Search with Graphiti (limit parameter not used)
             results = await self.client.search(query)
 
             # Convert results
@@ -74,7 +73,7 @@ class GraphitiService:
             edge_uuids = []
 
             if isinstance(results, list):
-                # エッジのリスト
+                # List of edges
                 for edge in results:
                     edge_uuids.append(edge.uuid)
                     edges.append(
@@ -185,7 +184,7 @@ class GraphitiService:
             raise
 
     async def update_fact(
-        self, edge_uuid: str, new_fact: str, reason: Optional[str] = None
+        self, edge_uuid: str, new_fact: str, reason: str | None = None
     ) -> UpdateFactResponse:
         """
         Factを更新

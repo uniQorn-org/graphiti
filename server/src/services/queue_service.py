@@ -4,8 +4,9 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
-from typing import Any
 
+from graphiti_core import Graphiti
+from graphiti_core.nodes import EpisodeType
 from shared.constants import DEFAULT_EPISODE_DELAY, MAX_RETRY_COUNT
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class QueueService:
         # Dictionary to track if a worker is running for each group_id
         self._queue_workers: dict[str, bool] = {}
         # Store the graphiti client after initialization
-        self._graphiti_client: Any = None
+        self._graphiti_client: Graphiti | None = None
 
     async def add_episode_task(
         self, group_id: str, process_func: Callable[[], Awaitable[None]]
@@ -93,7 +94,7 @@ class QueueService:
         """Check if a worker is running for a group_id."""
         return self._queue_workers.get(group_id, False)
 
-    async def initialize(self, graphiti_client: Any) -> None:
+    async def initialize(self, graphiti_client: Graphiti) -> None:
         """Initialize the queue service with a graphiti client.
 
         Args:
@@ -109,8 +110,8 @@ class QueueService:
         content: str,
         source_description: str,
         source_url: str | None,
-        episode_type: Any,
-        entity_types: Any,
+        episode_type: EpisodeType,
+        entity_types: list[dict[str, str]],
         uuid: str | None,
         reference_time: datetime | None = None,
     ) -> int:
