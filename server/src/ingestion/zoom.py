@@ -59,6 +59,52 @@ class ZoomIngester(BaseIngester):
         """Get source type identifier."""
         return "zoom"
 
+    def _should_skip_line(self, line: str) -> bool:
+        """Check if line should be skipped (WEBVTT header or empty)."""
+        return line.startswith("WEBVTT") or not line
+
+    def _is_timestamp_line(self, line: str) -> bool:
+        """Check if line is a timestamp (format: timestamp --> timestamp)."""
+        return "-->" in line
+
+    def _process_vtt_line(
+        self, line: str, current_message: dict, messages: list[dict]
+    ) -> dict:
+        """
+        Process a single VTT line and update current message.
+
+        Args:
+            line: Line to process
+            current_message: Current message being built
+            messages: List of completed messages
+
+        Returns:
+            Updated current message
+        """
+        # Skip header and empty lines
+        if self._should_skip_line(line):
+            return current_message
+
+        # New timestamp starts a new message
+        if self._is_timestamp_line(line):
+            if current_message.get("text"):
+                messages.append(current_message)
+            return {"timestamp": line}
+
+        # Speaker name follows timestamp
+        if current_message.get("timestamp") and not current_message.get("speaker"):
+            current_message["speaker"] = line
+            return current_message
+
+        # Message text follows speaker
+        if current_message.get("speaker"):
+            if "text" not in current_message:
+                current_message["text"] = line
+            else:
+                current_message["text"] += " " + line
+
+        return current_message
+
     def _parse_vtt(self, vtt_content: str) -> list[dict]:
         """
         Parse VTT file and extract messages.
@@ -74,27 +120,11 @@ class ZoomIngester(BaseIngester):
         current_message = {}
 
         for line in lines:
-            line = line.strip()
+            current_message = self._process_vtt_line(
+                line.strip(), current_message, messages
+            )
 
-            # Skip WEBVTT header and empty lines
-            if line.startswith("WEBVTT") or not line:
-                continue
-
-            # Detect speaker line (format: timestamp --> timestamp\nSpeaker Name)
-            if "-->" in line:
-                if current_message.get("text"):
-                    messages.append(current_message)
-                current_message = {"timestamp": line}
-            elif current_message.get("timestamp") and not current_message.get("speaker"):
-                # This is the speaker name
-                current_message["speaker"] = line
-            elif current_message.get("speaker"):
-                # This is the message text
-                if "text" not in current_message:
-                    current_message["text"] = line
-                else:
-                    current_message["text"] += " " + line
-
+        # Add final message if exists
         if current_message.get("text"):
             messages.append(current_message)
 

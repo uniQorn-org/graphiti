@@ -94,96 +94,116 @@ async def get_graph_statistics(session: ClientSession) -> dict[str, Any]:
     return stats
 
 
-def calculate_quality_score(stats: dict[str, Any]) -> dict[str, Any]:
-    score = 0
-    max_score = 0
-    details = []
+def _evaluate_node_episode_ratio(
+    episode_count: int, node_count: int, details: list[str]
+) -> int:
+    """Evaluate node/episode ratio and return score."""
+    if episode_count == 0:
+        return 0
 
-    episode_count = stats.get("episode_count", 0)
-    node_count = stats.get("node_count", 0)
-    fact_count = stats.get("fact_count", 0)
+    if node_count == 0:
+        details.append("❌ No nodes generated")
+        return 0
 
-    if episode_count > 0:
-        max_score += 10
-        if node_count > 0:
-            ratio = node_count / episode_count
-            if 0.3 <= ratio <= 3.0:
-                score += 10
-                details.append(f"✅ Node/Episode ratio: {ratio:.2f} (appropriate: 0.3-3.0)")
-            else:
-                score += 5
-                details.append(f"⚠️  Node/Episode ratio: {ratio:.2f} (recommended: 0.3-3.0)")
-        else:
-            details.append("❌ No nodes generated")
+    ratio = node_count / episode_count
+    if 0.3 <= ratio <= 3.0:
+        details.append(f"✅ Node/Episode ratio: {ratio:.2f} (appropriate: 0.3-3.0)")
+        return 10
 
-    max_score += 10
-    if fact_count > 0:
-        if node_count > 0:
-            ratio = fact_count / node_count
-            if ratio >= 1.0:
-                score += 10
-                details.append(f"✅ Fact/Node ratio: {ratio:.2f} (good: >= 1.0)")
-            elif ratio >= 0.5:
-                score += 7
-                details.append(f"⚠️  Fact/Node ratio: {ratio:.2f} (improvable: 0.5-1.0)")
-            else:
-                score += 3
-                details.append(f"❌ Fact/Node ratio: {ratio:.2f} (too low: < 0.5)")
-        else:
-            details.append("❌ No facts generated")
-    else:
+    details.append(f"⚠️  Node/Episode ratio: {ratio:.2f} (recommended: 0.3-3.0)")
+    return 5
+
+
+def _evaluate_fact_node_ratio(
+    fact_count: int, node_count: int, details: list[str]
+) -> int:
+    """Evaluate fact/node ratio and return score."""
+    if fact_count == 0:
         details.append("❌ No facts (relationships) exist")
+        return 0
 
-    max_score += 10
-    avg_episode_length = stats.get("avg_episode_length", 0)
-    if avg_episode_length > 0:
-        if 200 <= avg_episode_length <= 2000:
-            score += 10
-            details.append(
-                f"✅ Average episode length: {avg_episode_length:.0f} chars (appropriate: 200-2000)"
-            )
-        elif 100 <= avg_episode_length < 200:
-            score += 7
-            details.append(
-                f"⚠️  Average episode length: {avg_episode_length:.0f} chars (short: 100-200)"
-            )
-        elif avg_episode_length < 100:
-            score += 3
-            details.append(
-                f"❌ Average episode length: {avg_episode_length:.0f} chars (too short: < 100)"
-            )
+    if node_count == 0:
+        details.append("❌ No facts generated")
+        return 0
+
+    ratio = fact_count / node_count
+    if ratio >= 1.0:
+        details.append(f"✅ Fact/Node ratio: {ratio:.2f} (good: >= 1.0)")
+        return 10
+
+    if ratio >= 0.5:
+        details.append(f"⚠️  Fact/Node ratio: {ratio:.2f} (improvable: 0.5-1.0)")
+        return 7
+
+    details.append(f"❌ Fact/Node ratio: {ratio:.2f} (too low: < 0.5)")
+    return 3
+
+
+def _evaluate_episode_length(avg_episode_length: float, details: list[str]) -> int:
+    """Evaluate average episode length and return score."""
+    if avg_episode_length == 0:
+        return 0
+
+    if 200 <= avg_episode_length <= 2000:
+        details.append(
+            f"✅ Average episode length: {avg_episode_length:.0f} chars (appropriate: 200-2000)"
+        )
+        return 10
+
+    if 100 <= avg_episode_length < 200:
+        details.append(
+            f"⚠️  Average episode length: {avg_episode_length:.0f} chars (short: 100-200)"
+        )
+        return 7
+
+    if avg_episode_length < 100:
+        details.append(
+            f"❌ Average episode length: {avg_episode_length:.0f} chars (too short: < 100)"
+        )
+        return 3
+
+    details.append(
+        f"⚠️  Average episode length: {avg_episode_length:.0f} chars (long: > 2000)"
+    )
+    return 7
+
+
+def _evaluate_entity_ratio(node_labels: dict[str, int], details: list[str]) -> int:
+    """Evaluate entity node ratio and return score."""
+    if not node_labels:
+        return 0
+
+    entity_count = node_labels.get("Entity", 0)
+    total_nodes = sum(node_labels.values())
+
+    if entity_count > 0:
+        entity_ratio = entity_count / total_nodes
+        if entity_ratio > 0.8:
+            details.append(f"✅ Entity node ratio: {entity_ratio:.1%} (good)")
+            score = 10
         else:
-            score += 7
-            details.append(
-                f"⚠️  Average episode length: {avg_episode_length:.0f} chars (long: > 2000)"
-            )
+            details.append(f"⚠️  Entity node ratio: {entity_ratio:.1%}")
+            score = 7
+    else:
+        score = 0
 
-    max_score += 10
-    node_labels = stats.get("node_labels", {})
-    if len(node_labels) > 0:
-        entity_count = node_labels.get("Entity", 0)
-        total_nodes = sum(node_labels.values())
-        if entity_count > 0:
-            entity_ratio = entity_count / total_nodes
-            if entity_ratio > 0.8:
-                score += 10
-                details.append(f"✅ Entity node ratio: {entity_ratio:.1%} (good)")
-            else:
-                score += 7
-                details.append(f"⚠️  Entity node ratio: {entity_ratio:.1%}")
-        details.append(f"   Node label distribution: {node_labels}")
+    details.append(f"   Node label distribution: {node_labels}")
+    return score
 
-    max_score += 10
-    fact_types = stats.get("fact_types", {})
+
+def _evaluate_fact_diversity(fact_types: dict[str, int], details: list[str]) -> int:
+    """Evaluate fact type diversity and return score."""
     unique_fact_types = len(fact_types)
+
     if unique_fact_types >= 3:
-        score += 10
         details.append(f"✅ Fact type count: {unique_fact_types} (diverse)")
+        score = 10
     elif unique_fact_types >= 1:
-        score += 5
         details.append(f"⚠️  Fact type count: {unique_fact_types} (low diversity)")
+        score = 5
     else:
         details.append("❌ No fact types exist")
+        score = 0
 
     if fact_types:
         top_fact_types = sorted(fact_types.items(), key=lambda x: x[1], reverse=True)[
@@ -193,12 +213,93 @@ def calculate_quality_score(stats: dict[str, Any]) -> dict[str, Any]:
             f"   Main fact types: {', '.join([f'{k}({v})' for k, v in top_fact_types])}"
         )
 
+    return score
+
+
+def calculate_quality_score(stats: dict[str, Any]) -> dict[str, Any]:
+    """Calculate overall quality score based on graph statistics."""
+    score = 0
+    details = []
+
+    episode_count = stats.get("episode_count", 0)
+    node_count = stats.get("node_count", 0)
+    fact_count = stats.get("fact_count", 0)
+
+    # Evaluate node/episode ratio (10 points)
+    score += _evaluate_node_episode_ratio(episode_count, node_count, details)
+
+    # Evaluate fact/node ratio (10 points)
+    score += _evaluate_fact_node_ratio(fact_count, node_count, details)
+
+    # Evaluate episode length (10 points)
+    avg_episode_length = stats.get("avg_episode_length", 0)
+    score += _evaluate_episode_length(avg_episode_length, details)
+
+    # Evaluate entity ratio (10 points)
+    node_labels = stats.get("node_labels", {})
+    score += _evaluate_entity_ratio(node_labels, details)
+
+    # Evaluate fact diversity (10 points)
+    fact_types = stats.get("fact_types", {})
+    score += _evaluate_fact_diversity(fact_types, details)
+
+    max_score = 50
+
     return {
         "score": score,
         "max_score": max_score,
         "percentage": (score / max_score * 100) if max_score > 0 else 0,
         "details": details,
     }
+
+
+def _print_improvement_suggestions(stats: dict[str, Any]) -> None:
+    """Print improvement suggestions based on graph statistics."""
+    # Early return patterns - handle critical issues first
+    if stats.get("episode_count", 0) == 0:
+        print("  - No data has been ingested. Run load_slack_data.py")
+        return
+
+    if stats.get("node_count", 0) == 0:
+        print("  - No nodes generated. Check LLM configuration")
+        return
+
+    if stats.get("fact_count", 0) == 0:
+        print("  - No relationships extracted. Make episode content more conversational")
+        return
+
+    # Provide specific suggestions based on metrics
+    _suggest_episode_length_improvements(stats)
+    _suggest_node_ratio_improvements(stats)
+    _suggest_fact_ratio_improvements(stats)
+
+
+def _suggest_episode_length_improvements(stats: dict[str, Any]) -> None:
+    """Suggest improvements for episode length."""
+    avg_length = stats.get("avg_episode_length", 0)
+
+    if avg_length < 100:
+        print("  - Episodes too short. Increase time window (e.g., 4H, 1D)")
+    elif avg_length > 2000:
+        print("  - Episodes too long. Decrease time window (e.g., 30min, 1H)")
+
+
+def _suggest_node_ratio_improvements(stats: dict[str, Any]) -> None:
+    """Suggest improvements for node/episode ratio."""
+    node_ratio = stats.get("node_count", 0) / stats.get("episode_count", 1)
+
+    if node_ratio < 0.3:
+        print("  - Too few nodes. Create episodes with more specific content")
+    elif node_ratio > 3.0:
+        print("  - Too many nodes. Make episodes more cohesive")
+
+
+def _suggest_fact_ratio_improvements(stats: dict[str, Any]) -> None:
+    """Suggest improvements for fact/node ratio."""
+    fact_ratio = stats.get("fact_count", 0) / max(stats.get("node_count", 1), 1)
+
+    if fact_ratio < 0.5:
+        print("  - Too few relationships. Recommend thread-based chunking")
 
 
 async def validate_graph(verbose: bool = False) -> None:
@@ -255,45 +356,7 @@ async def validate_graph(verbose: bool = False) -> None:
                 print("  ❌ Poor - Issues with data ingestion or chunking")
 
             print("\n📝 Improvement Suggestions:")
-            if stats.get("episode_count", 0) == 0:
-                print(
-                    "  - No data has been ingested. Run load_slack_data.py"
-                )
-            elif stats.get("node_count", 0) == 0:
-                print("  - No nodes generated. Check LLM configuration")
-            elif stats.get("fact_count", 0) == 0:
-                print(
-                    "  - No relationships extracted. Make episode content more conversational"
-                )
-            else:
-                avg_length = stats.get("avg_episode_length", 0)
-                if avg_length < 100:
-                    print(
-                        "  - Episodes too short. Increase time window (e.g., 4H, 1D)"
-                    )
-                elif avg_length > 2000:
-                    print(
-                        "  - Episodes too long. Decrease time window (e.g., 30min, 1H)"
-                    )
-
-                node_ratio = stats.get("node_count", 0) / stats.get("episode_count", 1)
-                if node_ratio < 0.3:
-                    print(
-                        "  - Too few nodes. Create episodes with more specific content"
-                    )
-                elif node_ratio > 3.0:
-                    print(
-                        "  - Too many nodes. Make episodes more cohesive"
-                    )
-
-                fact_ratio = stats.get("fact_count", 0) / max(
-                    stats.get("node_count", 1), 1
-                )
-                if fact_ratio < 0.5:
-                    print(
-                        "  - Too few relationships. Recommend thread-based chunking"
-                    )
-
+            _print_improvement_suggestions(stats)
             print("\n" + "=" * 70)
 
 
