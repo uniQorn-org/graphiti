@@ -13,6 +13,7 @@ from models.api_types import (APIErrorResponse, EpisodeCreateRequest,
                               FactUpdateRequest, FactUpdateResponse,
                               GraphSearchRequest, GraphSearchResponse)
 from models.episode_types import EpisodeProcessingConfig
+from models.response_types import ErrorResponse
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from utils.formatting import format_fact_result
@@ -540,3 +541,255 @@ async def _create_and_save_new_edge(
 
     logger.info("=" * 80)
     return new_edge
+
+
+# ============================================================================
+# Pattern Analysis API
+# ============================================================================
+
+
+async def get_causality_timeline_api(request, graphiti_service, config) -> JSONResponse:
+    """
+    GET /graph/analysis/causality-timeline?component=web-prod-01&category=reason/canary
+
+    Track causality relationships over time.
+
+    Query Parameters:
+    - component (optional): Component name to filter by
+    - category (optional): Cause category (reason/xxx) to filter by
+    - group_ids (optional): List of group IDs to filter by
+
+    Returns:
+    - 200: Causality timeline results
+    - 500: Server error
+    """
+    try:
+        # Parse query parameters
+        component = request.query_params.get("component", None)
+        category = request.query_params.get("category", None)
+        group_ids = request.query_params.getlist("group_ids") or None
+
+        # Call pattern analysis function
+        from tools.pattern_analysis_tools import get_causality_timeline
+
+        result = await get_causality_timeline(
+            component=component,
+            category=category,
+            group_ids=group_ids,
+        )
+
+        # Check for error response
+        if isinstance(result, dict) and "error" in result:
+            return JSONResponse(
+                APIErrorResponse(
+                    error=result["error"], status_code=result.get("status_code", 500)
+                ).model_dump(),
+                status_code=result.get("status_code", 500),
+            )
+
+        # Return successful response
+        return JSONResponse(result)
+
+    except Exception as e:
+        logger.error(f"Error in causality timeline API: {e}")
+        return JSONResponse(
+            APIErrorResponse(error=str(e), status_code=500).model_dump(),
+            status_code=500,
+        )
+
+
+async def get_recurring_incidents_api(request, graphiti_service, config) -> JSONResponse:
+    """
+    GET /graph/analysis/recurring-incidents?similarity_threshold=0.75&use_llm=true
+
+    Detect recurring incidents using LLM-based advanced analysis.
+
+    Query Parameters:
+    - similarity_threshold (optional): Minimum similarity for advanced analysis (default: 0.75)
+    - use_llm (optional): Use LLM for deep pattern comparison (default: false)
+    - group_ids (optional): List of group IDs to filter by
+
+    Returns:
+    - 200: Recurring incidents results with LLM analysis
+    - 500: Server error
+    """
+    try:
+        # Parse query parameters
+        similarity_threshold = float(request.query_params.get("similarity_threshold", 0.75))
+        use_llm_param = request.query_params.get("use_llm", "false").lower()
+        use_llm = use_llm_param in ("true", "1", "yes")
+        group_ids = request.query_params.getlist("group_ids") or None
+
+        # Use advanced LLM-based analysis
+        from tools.pattern_analysis_tools import get_recurring_incidents_advanced
+
+        result = await get_recurring_incidents_advanced(
+            similarity_threshold=similarity_threshold,
+            use_llm=use_llm,
+            group_ids=group_ids,
+        )
+
+        # Check for error response
+        if isinstance(result, dict) and "error" in result:
+            return JSONResponse(
+                APIErrorResponse(
+                    error=result["error"], status_code=result.get("status_code", 500)
+                ).model_dump(),
+                status_code=result.get("status_code", 500),
+            )
+
+        # Return successful response
+        return JSONResponse(result)
+
+    except Exception as e:
+        logger.error(f"Error in recurring incidents API: {e}")
+        return JSONResponse(
+            APIErrorResponse(error=str(e), status_code=500).model_dump(),
+            status_code=500,
+        )
+
+
+# ============================================================================
+# CVR Analysis API (Marketing-style Conversion Rate Analysis)
+# ============================================================================
+
+
+async def get_component_impact_api(
+    request: Request, graphiti_service, config
+) -> JSONResponse:
+    """
+    Analyze component contribution rate by cause category (CVR-style).
+
+    GET /graph/analysis/component-impact
+    Query params:
+    - min_incidents: int (default: 2)
+    - category_filter: str (optional, e.g., "reason/config")
+    - component_filter: str (optional)
+    """
+    try:
+        from tools.pattern_analysis_tools import get_component_impact_analysis
+
+        # Parse query parameters
+        min_incidents = int(request.query_params.get("min_incidents", "2"))
+        category_filter = request.query_params.get("category_filter", None)
+        component_filter = request.query_params.get("component_filter", None)
+        group_ids = request.query_params.getlist("group_ids") or None
+
+        # Call analysis function
+        result = await get_component_impact_analysis(
+            min_incidents=min_incidents,
+            category_filter=category_filter,
+            component_filter=component_filter,
+            group_ids=group_ids,
+        )
+
+        # Check for error response
+        if isinstance(result, dict) and "error" in result:
+            return JSONResponse(
+                APIErrorResponse(
+                    error=result["error"], status_code=result.get("status_code", 500)
+                ).model_dump(),
+                status_code=result.get("status_code", 500),
+            )
+
+        # Return successful response
+        return JSONResponse(result)
+
+    except Exception as e:
+        logger.error(f"Error in component impact API: {e}")
+        return JSONResponse(
+            APIErrorResponse(error=str(e), status_code=500).model_dump(),
+            status_code=500,
+        )
+
+
+async def get_component_severity_api(
+    request: Request, graphiti_service, config
+) -> JSONResponse:
+    """
+    Analyze component severity conversion rate.
+
+    GET /graph/analysis/component-severity
+    Query params:
+    - min_incidents: int (default: 2)
+    - component_filter: str (optional)
+    """
+    try:
+        from tools.pattern_analysis_tools import get_component_severity_conversion
+
+        # Parse query parameters
+        min_incidents = int(request.query_params.get("min_incidents", "2"))
+        component_filter = request.query_params.get("component_filter", None)
+        group_ids = request.query_params.getlist("group_ids") or None
+
+        # Call analysis function
+        result = await get_component_severity_conversion(
+            min_incidents=min_incidents,
+            component_filter=component_filter,
+            group_ids=group_ids,
+        )
+
+        # Check for error response
+        if isinstance(result, dict) and "error" in result:
+            return JSONResponse(
+                APIErrorResponse(
+                    error=result["error"], status_code=result.get("status_code", 500)
+                ).model_dump(),
+                status_code=result.get("status_code", 500),
+            )
+
+        # Return successful response
+        return JSONResponse(result)
+
+    except Exception as e:
+        logger.error(f"Error in component severity API: {e}")
+        return JSONResponse(
+            APIErrorResponse(error=str(e), status_code=500).model_dump(),
+            status_code=500,
+        )
+
+
+async def get_flow_metrics_api(
+    request: Request, graphiti_service, config
+) -> JSONResponse:
+    """
+    Analyze cause → component → impact flow with CVR metrics.
+
+    GET /graph/analysis/flow-metrics
+    Query params:
+    - min_flow_count: int (default: 1)
+    - category_filter: str (optional)
+    """
+    try:
+        from tools.pattern_analysis_tools import get_cause_to_impact_flow_metrics
+
+        # Parse query parameters
+        min_flow_count = int(request.query_params.get("min_flow_count", "1"))
+        category_filter = request.query_params.get("category_filter", None)
+        group_ids = request.query_params.getlist("group_ids") or None
+
+        # Call analysis function
+        result = await get_cause_to_impact_flow_metrics(
+            min_flow_count=min_flow_count,
+            category_filter=category_filter,
+            group_ids=group_ids,
+        )
+
+        # Check for error response
+        if isinstance(result, dict) and "error" in result:
+            return JSONResponse(
+                APIErrorResponse(
+                    error=result["error"], status_code=result.get("status_code", 500)
+                ).model_dump(),
+                status_code=result.get("status_code", 500),
+            )
+
+        # Return successful response
+        return JSONResponse(result)
+
+    except Exception as e:
+        logger.error(f"Error in flow metrics API: {e}")
+        return JSONResponse(
+            APIErrorResponse(error=str(e), status_code=500).model_dump(),
+            status_code=500,
+        )

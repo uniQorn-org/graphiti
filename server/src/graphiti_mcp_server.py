@@ -134,6 +134,25 @@ mcp.custom_route("/graph/facts/{uuid}", methods=["PATCH", "OPTIONS"])(
     http_endpoints.update_fact_endpoint
 )
 
+# Pattern Analysis endpoints
+mcp.custom_route("/graph/analysis/causality-timeline", methods=["GET", "OPTIONS"])(
+    http_endpoints.causality_timeline_endpoint
+)
+mcp.custom_route("/graph/analysis/recurring-incidents", methods=["GET", "OPTIONS"])(
+    http_endpoints.recurring_incidents_endpoint
+)
+
+# CVR Analysis endpoints (SRE-style Conversion Rate Analysis)
+mcp.custom_route("/graph/analysis/component-impact", methods=["GET", "OPTIONS"])(
+    http_endpoints.component_impact_endpoint
+)
+mcp.custom_route("/graph/analysis/component-severity", methods=["GET", "OPTIONS"])(
+    http_endpoints.component_severity_endpoint
+)
+mcp.custom_route("/graph/analysis/flow-metrics", methods=["GET", "OPTIONS"])(
+    http_endpoints.flow_metrics_endpoint
+)
+
 
 # ============================================================================
 # Server Initialization and Main Entry Point
